@@ -62,6 +62,23 @@ class EnhancedNeuroLintApiServer {
   }
 
   setupRoutes() {
+    // Root endpoint to handle requests from frontend
+    this.app.get("/", (req, res) => {
+      res.json({
+        name: "NeuroLint API Server",
+        version: "1.0.0",
+        status: "running",
+        timestamp: new Date().toISOString(),
+        endpoints: {
+          health: "/api/health",
+          analyze: "POST /api/analyze",
+          execute: "POST /api/execute",
+          layers: "/api/layers",
+          validate: "POST /api/validate",
+        },
+      });
+    });
+
     // Health check endpoint
     this.app.get("/api/health", (req, res) => {
       res.json({
