@@ -7,19 +7,25 @@ class ApiClient {
     this.timeout = 60000;
     this.retries = 3;
 
-    // Try to get auth data if no API key provided
-    if (!this.apiKey) {
-      try {
-        const { getAuthData } = await import("../commands/auth.js");
-        const authData = getAuthData();
-        if (authData) {
-          this.apiKey = authData.apiKey;
-          this.baseURL = authData.apiUrl || this.baseURL;
-        }
-      } catch (error) {
-        // Ignore auth errors during initialization
+    // Initialize with lazy auth loading
+    this._authLoaded = false;
+  }
+
+  async _loadAuth() {
+    if (this._authLoaded || this.apiKey) return;
+
+    try {
+      const { getAuthData } = await import("../commands/auth.js");
+      const authData = getAuthData();
+      if (authData) {
+        this.apiKey = authData.apiKey;
+        this.baseURL = authData.apiUrl || this.baseURL;
       }
+    } catch (error) {
+      // Ignore auth errors during initialization
     }
+    this._authLoaded = true;
+  }
 
     this.client = axios.create({
       baseURL: this.baseURL,
