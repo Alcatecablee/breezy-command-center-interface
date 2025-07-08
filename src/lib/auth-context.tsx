@@ -97,9 +97,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // Check active sessions and sets the user
     const getSession = async () => {
       try {
+        // Add timeout to prevent hanging
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Session check timeout")), 5000),
+        );
+
         const {
           data: { session },
-        } = await supabase.auth.getSession();
+        } = (await Promise.race([sessionPromise, timeoutPromise])) as any;
         setUser(session?.user ?? null);
 
         if (session?.user) {
@@ -107,6 +113,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       } catch (error) {
         console.error("Error getting session:", error);
+        // Don't block the app if session check fails
+        setUser(null);
       }
 
       setLoading(false);
