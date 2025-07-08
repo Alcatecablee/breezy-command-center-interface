@@ -407,6 +407,19 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
             </p>
           </div>
 
+          {/* Server Status Notice */}
+          {!serverOnline && (
+            <div className="mt-8 p-4 bg-blue-900/20 border border-blue-600/30 rounded-lg">
+              <div className="text-blue-400 font-medium mb-2">
+                🔧 Client-Side Mode Active
+              </div>
+              <div className="text-blue-200 text-sm">
+                API server is not available. Using client-side layer execution.
+                All features work but may be slower.
+              </div>
+            </div>
+          )}
+
           {/* Subscription Status */}
           {!canRunAnalysis() && (
             <div className="mt-8 p-4 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
