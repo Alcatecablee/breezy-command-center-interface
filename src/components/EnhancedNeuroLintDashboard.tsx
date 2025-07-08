@@ -365,6 +365,18 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black">
+      {/* Demo Mode Banner */}
+      {!user && (
+        <div className="bg-blue-600 text-white text-center py-2 px-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
+            <span className="text-sm font-medium">🚀 Demo Mode Active</span>
+            <span className="text-sm opacity-90">
+              Experience full NeuroLint functionality without registration
+            </span>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Header with User Info */}
         <header className="mb-16">
