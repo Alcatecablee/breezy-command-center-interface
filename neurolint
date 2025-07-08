@@ -1,0 +1,18 @@
+#!/usr/bin/env node
+
+/**
+ * NeuroLint CLI Launcher
+ * Simple launcher that runs the main CLI application
+ */
+
+const path = require('path');
+
+// Resolve and run the main CLI
+const cliPath = path.join(__dirname, 'src', 'index.js');
+
+try {
+  require(cliPath);
+} catch (error) {
+  console.error('NeuroLint CLI Error:', error.message);
+  process.exit(1);
+}

@@ -27,7 +27,7 @@ if (fs.existsSync(buildConfig.distDir)) {
 fs.mkdirSync(buildConfig.distDir, { recursive: true });
 
 // Create production bundle
-console.log("📦 Creating production bundle...");
+console.log("�� Creating production bundle...");
 
 // Read the main entry point
 const mainContent = fs.readFileSync(buildConfig.entryPoint, "utf8");
@@ -140,6 +140,11 @@ function getAllJSFiles(dir) {
 }
 
 function transformRequires(content, currentFile) {
+  // Remove shebang lines from content (except main file)
+  if (currentFile !== "index.js") {
+    content = content.replace(/^#!/gm, "//");
+  }
+
   // Transform relative requires to use our module paths
   return content.replace(
     /require\(['"]([^'"]+)['"]\)/g,
