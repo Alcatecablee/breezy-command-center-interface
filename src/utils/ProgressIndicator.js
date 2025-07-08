@@ -144,4 +144,4 @@ class ProgressIndicator {
   }
 }
 
-module.exports = { ProgressIndicator };
+export { ProgressIndicator };

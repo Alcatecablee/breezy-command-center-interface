@@ -323,4 +323,4 @@ class Semaphore {
   }
 }
 
-module.exports = { PerformanceOptimizer, Semaphore };
+export { PerformanceOptimizer, Semaphore };
