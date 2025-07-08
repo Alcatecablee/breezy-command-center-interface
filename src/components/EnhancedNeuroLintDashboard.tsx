@@ -535,49 +535,110 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
         <div className="grid lg:grid-cols-3 gap-8 mb-16">
           {/* Analysis Control */}
           <div className="lg:col-span-1 bg-gray-900 border border-gray-800 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-white mb-6">
-              Run Analysis
-            </h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-white">Run Analysis</h3>
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${serverOnline ? "bg-green-400" : "bg-red-400"}`}
+                ></div>
+                <span className="text-xs text-gray-400">
+                  {serverOnline ? "Online" : "Offline"}
+                </span>
+              </div>
+            </div>
+
+            {/* Error Display */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-900/20 border border-red-600/30 rounded-md">
+                <div className="flex justify-between items-start">
+                  <div className="text-red-400 text-sm">{error}</div>
+                  <button
+                    onClick={clearError}
+                    className="text-red-400 hover:text-red-300 ml-2"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Warnings Display */}
+            {warnings.length > 0 && (
+              <div className="mb-4 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-md">
+                {warnings.map((warning, index) => (
+                  <div key={index} className="text-yellow-400 text-sm">
+                    {warning}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Progress */}
-            {(isAnalyzing || progress > 0) && (
+            {isAnalyzing && (
               <div className="mb-6">
                 <div className="flex justify-between text-sm text-gray-400 mb-2">
                   <span>Processing layers</span>
-                  <span>{Math.round(progress)}%</span>
+                  <span>{Math.round(analysisProgress)}%</span>
                 </div>
                 <div className="w-full bg-gray-800 rounded-full h-1">
                   <div
                     className="h-1 bg-white rounded-full transition-all duration-300"
-                    style={{ width: `${progress}%` }}
+                    style={{ width: `${analysisProgress}%` }}
                   ></div>
                 </div>
                 {currentLayer && (
                   <div className="text-sm text-gray-400 mt-2">
-                    Layer {currentLayer}: {layers[currentLayer - 1]?.name}
+                    Layer {currentLayer}:{" "}
+                    {layers.find((l) => l.id === currentLayer)?.name}
                   </div>
                 )}
               </div>
             )}
 
+            {/* Last Result Summary */}
+            {lastResult && !isAnalyzing && (
+              <div className="mb-6 p-4 bg-gray-800 rounded-lg">
+                <div className="text-sm text-gray-400 mb-2">Last Analysis:</div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="text-white">
+                    {lastResult.summary.totalChanges} changes
+                  </div>
+                  <div className="text-white">
+                    {lastResult.summary.successfulLayers}/
+                    {lastResult.summary.totalLayers} layers
+                  </div>
+                  <div className="text-gray-400">
+                    {lastResult.summary.totalExecutionTime}ms
+                  </div>
+                  <div className="text-gray-400">
+                    {lastResult.summary.cacheHitRate.toFixed(0)}% cached
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3">
               <button
-                onClick={handleAnalyze}
+                onClick={handleQuickAnalysis}
                 disabled={isAnalyzing || !canRunAnalysis()}
                 className="w-full bg-white hover:bg-gray-200 disabled:bg-gray-600 text-black font-medium py-3 px-4 rounded-md transition-colors"
               >
-                {isAnalyzing ? "Analyzing..." : "Start Analysis"}
+                {isAnalyzing ? "Analyzing..." : "Analyze Code"}
               </button>
 
               <div className="grid grid-cols-2 gap-3">
                 <button
+                  onClick={() => setShowCodeInput(true)}
                   disabled={!canRunAnalysis()}
                   className="border border-gray-700 hover:border-gray-600 disabled:border-gray-800 text-gray-300 disabled:text-gray-600 font-medium py-2 px-3 rounded-md transition-colors text-sm"
                 >
                   Quick Fix
                 </button>
-                <button className="border border-gray-700 hover:border-gray-600 text-gray-300 font-medium py-2 px-3 rounded-md transition-colors text-sm">
-                  Configure
+                <button
+                  onClick={clearResults}
+                  className="border border-gray-700 hover:border-gray-600 text-gray-300 font-medium py-2 px-3 rounded-md transition-colors text-sm"
+                >
+                  Clear Results
                 </button>
               </div>
             </div>
