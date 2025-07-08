@@ -303,7 +303,7 @@ export function useNeuroLintOrchestration(): UseNeuroLintOrchestrationState &
           error: `Execution failed: ${error.message}`,
         }));
 
-        // Track failure (skip in demo mode)
+        // Track failure
         if (user) {
           await trackUsage(user.id, "execution_failed", {
             error: error.message,
