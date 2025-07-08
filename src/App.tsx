@@ -9,10 +9,8 @@ import { isSupabaseConfigured } from "./lib/supabase";
 
 function AppContent() {
   const [showAdmin, setShowAdmin] = useState(() => {
-    // Show admin by default if Supabase is not configured or if URL contains admin
-    return (
-      !isSupabaseConfigured || window.location.search.includes("admin=true")
-    );
+    // Always show admin by default for setup, regardless of Supabase config
+    return true;
   });
   const { user, loading } = useAuth();
 
