@@ -43,6 +43,7 @@
     "@babel/parser": "^7.28.0",
     "@paypal/react-paypal-js": "^8.8.3",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.50.3",
     "@vitejs/plugin-react": "^4.6.0",
     "axios": "^1.6.2",
