@@ -191,7 +191,7 @@ export function useNeuroLintOrchestration(): UseNeuroLintOrchestrationState &
       }));
 
       try {
-        // Track usage start (skip in demo mode)
+        // Track usage start
         if (user) {
           await trackUsage(user.id, "execution_started", {
             selectedLayers,
