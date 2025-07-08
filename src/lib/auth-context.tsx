@@ -44,6 +44,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const loadUserData = async (currentUser: User) => {
     try {
+      // Check database setup first
+      const dbStatus = await checkDatabaseSetup();
+      if (!dbStatus.isSetup) {
+        console.warn(
+          "Database not fully set up. Missing tables:",
+          dbStatus.missingTables,
+        );
+        // Still try to load user data, but it might fail
+      }
+
+      // Initialize user profile if needed
+      await initializeUserProfile(currentUser.id, currentUser.email || "");
+
       // Load user profile
       const { data: profileData } = await getUserProfile(currentUser.id);
       setProfile(profileData);
