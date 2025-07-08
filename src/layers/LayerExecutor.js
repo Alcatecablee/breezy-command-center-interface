@@ -66,7 +66,7 @@ class LayerExecutor {
 
     console.log(
       chalk.blue(
-        `🔧 Executing ${correctedLayers.length} layers with safety validation`,
+        `Executing ${correctedLayers.length} layers with safety validation`,
       ),
     );
 
@@ -76,9 +76,7 @@ class LayerExecutor {
       const startTime = performance.now();
 
       if (verbose) {
-        console.log(
-          `\n🏗️  Layer ${layerId}: ${this.layerDescriptions[layerId]}`,
-        );
+        console.log(`\nLayer ${layerId}: ${this.layerDescriptions[layerId]}`);
       }
 
       try {
@@ -134,18 +132,16 @@ class LayerExecutor {
           });
 
           if (verbose) {
-            console.log(chalk.green(`✅ Applied ${changeCount} changes`));
+            console.log(chalk.green(`Applied ${changeCount} changes`));
             if (improvements.length > 0) {
               improvements.slice(0, 3).forEach((imp) => {
-                console.log(chalk.gray(`   • ${imp}`));
+                console.log(chalk.gray(`   ${imp}`));
               });
             }
           }
         }
       } catch (error) {
-        console.error(
-          chalk.red(`❌ Layer ${layerId} failed: ${error.message}`),
-        );
+        console.error(chalk.red(`Layer ${layerId} failed: ${error.message}`));
 
         results.push({
           layerId,
@@ -189,7 +185,7 @@ class LayerExecutor {
     if (layerConfig.supportsAST && this.shouldUseAST(code)) {
       try {
         if (options.verbose) {
-          console.log(chalk.gray(`   🌳 Using AST transformation`));
+          console.log(chalk.gray(`   Using AST transformation`));
         }
         return await this.runLayerScript(scriptPath, code, {
           ...options,
@@ -198,7 +194,7 @@ class LayerExecutor {
       } catch (astError) {
         console.warn(
           chalk.yellow(
-            `   ⚠️  AST failed, using regex fallback: ${astError.message}`,
+            `   AST failed, using regex fallback: ${astError.message}`,
           ),
         );
         return await this.runLayerScript(scriptPath, code, {
@@ -210,9 +206,7 @@ class LayerExecutor {
       // Layers 1-2 or when AST not suitable: use regex
       if (options.verbose && layerConfig.supportsAST) {
         console.log(
-          chalk.gray(
-            `   📝 Using regex transformation (complex code structure)`,
-          ),
+          chalk.gray(`   Using regex transformation (complex code structure)`),
         );
       }
       return await this.runLayerScript(scriptPath, code, {

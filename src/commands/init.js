@@ -195,10 +195,10 @@ NEUROLINT_TIMEOUT=60000`,
 
 function displayNextSteps(config) {
   console.log();
-  console.log(chalk.bold("🎉 NeuroLint Setup Complete!"));
+  console.log(chalk.bold("NeuroLint Setup Complete!"));
   console.log(chalk.gray("=".repeat(50)));
 
-  console.log(chalk.yellow("📋 Configuration created:"));
+  console.log(chalk.white("Configuration created:"));
   console.log(`   ${chalk.blue(".neurolint.json")} - Main configuration`);
   console.log(`   ${chalk.blue(".neurolintignore")} - File ignore patterns`);
   console.log(
@@ -206,7 +206,7 @@ function displayNextSteps(config) {
   );
 
   console.log();
-  console.log(chalk.yellow("🔧 Enabled Layers:"));
+  console.log(chalk.white("Enabled Layers:"));
   config.layers.enabled.forEach((layer) => {
     const layerConfig = config.layers.config[layer];
     if (layerConfig) {
@@ -216,7 +216,7 @@ function displayNextSteps(config) {
   });
 
   console.log();
-  console.log(chalk.yellow("🚀 Next Steps:"));
+  console.log(chalk.white("Next Steps:"));
   console.log(
     `   1. ${chalk.white("neurolint login")} - Authenticate for advanced features`,
   );
@@ -230,7 +230,7 @@ function displayNextSteps(config) {
 
   console.log();
   console.log(
-    chalk.green("💡 Tip: Run `neurolint help` for full command reference"),
+    chalk.green("Tip: Run `neurolint help` for full command reference"),
   );
 }
 
