@@ -1,10 +1,10 @@
-const chalk = require("chalk");
-const ora = require("ora");
-const fs = require("fs");
-const path = require("path");
-const { ConfigManager } = require("../utils/ConfigManager");
-const { ApiClient } = require("../utils/ApiClient");
-const { getAuthData } = require("./auth");
+import chalk from "chalk";
+import ora from "ora";
+import fs from "fs";
+import path from "path";
+import { ConfigManager } from "../utils/ConfigManager.js";
+import { ApiClient } from "../utils/ApiClient.js";
+import { getAuthData } from "./auth.js";
 
 async function statusCommand(options) {
   const spinner = ora("Checking NeuroLint status...").start();

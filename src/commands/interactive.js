@@ -1,9 +1,9 @@
-const chalk = require("chalk");
-const readline = require("readline");
-const { analyzeCommand } = require("./analyze");
-const { fixCommand } = require("./fix");
-const { statusCommand } = require("./status");
-const { configCommand } = require("./config");
+import chalk from "chalk";
+import readline from "readline";
+import { analyzeCommand } from "./analyze.js";
+import { fixCommand } from "./fix.js";
+import { statusCommand } from "./status.js";
+import { configCommand } from "./config.js";
 
 async function interactiveCommand(options) {
   console.log(chalk.bold.blue("NeuroLint Interactive Mode"));
