@@ -140,7 +140,7 @@ class VSCodeBridge {
         data: { files: files.length, layers },
       });
 
-      const { fixCommand } = require("../commands/fix");
+      const { fixCommand } = await import("../commands/fix.js");
 
       await fixCommand(files[0] || ".", {
         layers: layers.join(","),
