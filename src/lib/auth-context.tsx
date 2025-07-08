@@ -114,6 +114,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    if (!isSupabaseConfigured) {
+      return {
+        data: null,
+        error: new Error(
+          "Supabase not configured. Please set up environment variables.",
+        ),
+      };
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -122,6 +131,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const signUp = async (email: string, password: string, metadata?: any) => {
+    if (!isSupabaseConfigured) {
+      return {
+        data: null,
+        error: new Error(
+          "Supabase not configured. Please set up environment variables.",
+        ),
+      };
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -133,6 +151,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   const signOut = async () => {
+    if (!isSupabaseConfigured) {
+      throw new Error("Supabase not configured");
+    }
+
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   };
