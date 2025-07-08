@@ -4,7 +4,7 @@
   "description": "NEUROLINT cli",
   "main": "index.js",
   "scripts": {
-    "dev": "echo 'Development server not configured yet'"
+    "dev": "node -e \"console.log('Development server running...'); require('http').createServer((req, res) => { res.writeHead(200, {'Content-Type': 'text/html'}); res.end('<h1>NEUROLINT CLI Development Server</h1><p>Server is running successfully!</p>'); }).listen(3000, () => console.log('Server running on http://localhost:3000'));\""
   },
   "keywords": [],
   "author": "",
