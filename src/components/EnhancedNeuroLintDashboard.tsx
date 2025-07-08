@@ -406,12 +406,13 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
 
           <div className="max-w-2xl">
             <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
-              Welcome back, {profile?.company || "Developer"}
+              Welcome to NeuroLint{" "}
+              {user ? `back, ${profile?.company || "Developer"}` : "Demo"}
             </h2>
             <p className="text-lg text-gray-400 leading-relaxed">
-              Global enterprise code analysis platform with PayPal billing
-              support worldwide. Advanced 6-layer orchestration for TypeScript,
-              React, and Next.js codebases.
+              {user
+                ? "Global enterprise code analysis platform with PayPal billing support worldwide. Advanced 6-layer orchestration for TypeScript, React, and Next.js codebases."
+                : "Experience the power of advanced 6-layer code analysis and transformation for TypeScript, React, and Next.js. Try the full functionality in demo mode!"}
             </p>
           </div>
 
