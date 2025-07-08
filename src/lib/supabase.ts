@@ -161,3 +161,36 @@ export const getSubscription = async (userId: string) => {
 
   return { data, error };
 };
+
+// Usage tracking for billing and analytics
+export const trackUsage = async (
+  userId: string,
+  action: string,
+  metadata?: any,
+) => {
+  const { data, error } = await supabase.from("usage_tracking").insert([
+    {
+      user_id: userId,
+      action,
+      metadata,
+      created_at: new Date().toISOString(),
+    },
+  ]);
+
+  return { data, error };
+};
+
+export const getUsageStats = async (
+  userId: string,
+  startDate: string,
+  endDate: string,
+) => {
+  const { data, error } = await supabase
+    .from("usage_tracking")
+    .select("*")
+    .eq("user_id", userId)
+    .gte("created_at", startDate)
+    .lte("created_at", endDate);
+
+  return { data, error };
+};
