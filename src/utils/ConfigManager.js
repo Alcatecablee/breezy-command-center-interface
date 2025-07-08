@@ -296,4 +296,4 @@ class ConfigManager {
   }
 }
 
-module.exports = { ConfigManager };
+export { ConfigManager };

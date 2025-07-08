@@ -287,4 +287,4 @@ function getSeverityLevel(severity) {
   }
 }
 
-module.exports = { analyzeCommand };
+export { analyzeCommand };
