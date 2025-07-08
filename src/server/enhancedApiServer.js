@@ -3,11 +3,15 @@
  * Provides REST endpoints for the React dashboard to interact with CLI layers
  */
 
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
-const fs = require("fs");
-const { spawn } = require("child_process");
+import express from "express";
+import cors from "cors";
+import path from "path";
+import fs from "fs";
+import { spawn } from "child_process";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class EnhancedNeuroLintApiServer {
   constructor(port = 8001) {
