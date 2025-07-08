@@ -71,6 +71,14 @@ export interface UserProfile {
   updated_at: string;
 }
 
+export interface UsageTracking {
+  id: string;
+  user_id: string;
+  action: string;
+  metadata: any;
+  created_at: string;
+}
+
 // Auth helpers
 export const getCurrentUser = async () => {
   const {
