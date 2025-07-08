@@ -25,8 +25,8 @@ cp .env.example .env.local
 
 Add your Supabase credentials:
 
-- `NEXT_PUBLIC_SUPABASE_URL`: Found in Project Settings > API
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Found in Project Settings > API
+- `VITE_SUPABASE_URL`: Found in Project Settings > API
+- `VITE_SUPABASE_ANON_KEY`: Found in Project Settings > API
 
 ### 2. PayPal Setup (South Africa)
 
@@ -47,8 +47,8 @@ Add your Supabase credentials:
 #### Add PayPal Credentials
 
 ```env
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=your-paypal-client-id
-NEXT_PUBLIC_PAYPAL_CLIENT_TOKEN=your-paypal-client-token
+VITE_PAYPAL_CLIENT_ID=your-paypal-client-id
+VITE_PAYPAL_CLIENT_TOKEN=your-paypal-client-token
 ```
 
 ### 3. Authentication Configuration
@@ -103,10 +103,10 @@ npm run dev
 #### Environment Variables for Production
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your-production-supabase-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-production-anon-key
-NEXT_PUBLIC_PAYPAL_CLIENT_ID=your-production-paypal-client-id
-NEXT_PUBLIC_APP_URL=https://your-domain.com
+VITE_SUPABASE_URL=your-production-supabase-url
+VITE_SUPABASE_ANON_KEY=your-production-anon-key
+VITE_PAYPAL_CLIENT_ID=your-production-paypal-client-id
+VITE_APP_URL=https://your-domain.com
 ```
 
 ## 🇿🇦 South African Specific Features
