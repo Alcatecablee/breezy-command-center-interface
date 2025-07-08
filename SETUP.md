@@ -109,27 +109,32 @@ VITE_PAYPAL_CLIENT_ID=your-production-paypal-client-id
 VITE_APP_URL=https://your-domain.com
 ```
 
-## 🇿🇦 South African Specific Features
+## 🌍 Global PayPal Integration
 
-### Payment Integration
+### Why PayPal Over Stripe
 
-- **PayPal**: Full ZAR (South African Rand) support
-- **Pricing**: Optimized for South African market
-- **Compliance**: POPIA (Protection of Personal Information Act) ready
+- **Global Reach**: PayPal works in 200+ countries vs Stripe's limited availability
+- **Emerging Markets**: Full support for Africa, parts of Asia, Latin America
+- **Local Currencies**: 8 major currencies supported natively
+- **No Geographic Restrictions**: Works everywhere PayPal operates
 
-### Localization
+### Supported Currencies & Regions
 
-- Currency: ZAR (South African Rand)
-- Timezone: Africa/Johannesburg
-- Locale: en_ZA
+- **🇺🇸 USD**: United States, Global default
+- **🇪🇺 EUR**: European Union, Germany, France, etc.
+- **🇬🇧 GBP**: United Kingdom
+- **🇿🇦 ZAR**: South Africa (Stripe doesn't support)
+- **🇦🇺 AUD**: Australia
+- **🇨🇦 CAD**: Canada
+- **🇯🇵 JPY**: Japan
+- **🇮🇳 INR**: India
 
-### Tax Compliance
+### Automatic Features
 
-PayPal automatically handles:
-
-- VAT calculations for South African customers
-- Currency conversion
-- International payment processing
+- **Currency Detection**: Auto-detects user's region
+- **Local Pricing**: Optimized pricing for each market
+- **Tax Compliance**: PayPal handles VAT/GST automatically
+- **Currency Conversion**: Real-time exchange rates
 
 ## 📊 Database Schema Overview
 
@@ -156,7 +161,7 @@ PayPal automatically handles:
 - HTTPS-only communication
 - PayPal secure payment processing
 
-## 📈 Analytics & Billing
+## ��� Analytics & Billing
 
 ### Usage Tracking
 
