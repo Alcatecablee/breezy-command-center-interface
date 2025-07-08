@@ -1,0 +1,221 @@
+{
+  "name": "neurolint",
+  "displayName": "NeuroLint",
+  "description": "Advanced rule-based code analysis and transformation with enterprise features",
+  "version": "1.0.0",
+  "publisher": "neurolint",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Linters",
+    "Formatters",
+    "Other"
+  ],
+  "keywords": [
+    "typescript",
+    "javascript",
+    "react",
+    "nextjs",
+    "analysis",
+    "enterprise"
+  ],
+  "activationEvents": [
+    "onLanguage:typescript",
+    "onLanguage:javascript",
+    "onLanguage:typescriptreact",
+    "onLanguage:javascriptreact"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "neurolint.analyzeFile",
+        "title": "NeuroLint: Analyze Current File"
+      },
+      {
+        "command": "neurolint.fixFile",
+        "title": "NeuroLint: Fix Current File"
+      },
+      {
+        "command": "neurolint.analyzeWorkspace",
+        "title": "NeuroLint: Analyze Workspace"
+      },
+      {
+        "command": "neurolint.configure",
+        "title": "NeuroLint: Configure"
+      },
+      {
+        "command": "neurolint.login",
+        "title": "NeuroLint: Login"
+      },
+      {
+        "command": "neurolint.showOutput",
+        "title": "NeuroLint: Show Output"
+      },
+      {
+        "command": "neurolint.enterprise.dashboard",
+        "title": "NeuroLint Enterprise: Dashboard"
+      },
+      {
+        "command": "neurolint.enterprise.analytics",
+        "title": "NeuroLint Enterprise: Analytics"
+      },
+      {
+        "command": "neurolint.enterprise.team",
+        "title": "NeuroLint Enterprise: Team"
+      },
+      {
+        "command": "neurolint.enterprise.compliance",
+        "title": "NeuroLint Enterprise: Compliance"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "neurolint.analyzeFile",
+        "key": "ctrl+shift+l",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "neurolint.fixFile",
+        "key": "ctrl+shift+f",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "neurolint.analyzeWorkspace",
+        "key": "ctrl+shift+w"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "neurolint.analyzeFile",
+          "group": "neurolint",
+          "when": "resourceExtname =~ /\\.(ts|tsx|js|jsx)$/"
+        },
+        {
+          "command": "neurolint.fixFile",
+          "group": "neurolint",
+          "when": "resourceExtname =~ /\\.(ts|tsx|js|jsx)$/"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "NeuroLint",
+      "properties": {
+        "neurolint.apiUrl": {
+          "type": "string",
+          "default": "http://localhost:5000",
+          "description": "NeuroLint API server URL"
+        },
+        "neurolint.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for authentication"
+        },
+        "neurolint.enabledLayers": {
+          "type": "array",
+          "default": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "description": "Analysis layers to enable (1-6)"
+        },
+        "neurolint.autoFix": {
+          "type": "boolean",
+          "default": false,
+          "description": "Auto-fix on save"
+        },
+        "neurolint.diagnosticsLevel": {
+          "type": "string",
+          "enum": [
+            "error",
+            "warning",
+            "info"
+          ],
+          "default": "warning",
+          "description": "Diagnostic severity level"
+        },
+        "neurolint.timeout": {
+          "type": "number",
+          "default": 30000,
+          "description": "Request timeout in milliseconds"
+        },
+        "neurolint.enterpriseFeatures.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable enterprise features"
+        },
+        "neurolint.enterpriseFeatures.teamId": {
+          "type": "string",
+          "default": "",
+          "description": "Enterprise team ID"
+        },
+        "neurolint.enterpriseFeatures.auditLogging": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable audit logging"
+        },
+        "neurolint.enterpriseFeatures.complianceMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable compliance mode"
+        },
+        "neurolint.workspace.maxFileSize": {
+          "type": "number",
+          "default": 10485760,
+          "description": "Maximum file size in bytes"
+        },
+        "neurolint.workspace.maxFiles": {
+          "type": "number",
+          "default": 1000,
+          "description": "Maximum files to analyze"
+        },
+        "neurolint.workspace.excludePatterns": {
+          "type": "array",
+          "default": [
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/build/**"
+          ],
+          "description": "File patterns to exclude"
+        },
+        "neurolint.workspace.includePatterns": {
+          "type": "array",
+          "default": [
+            "**/*.ts",
+            "**/*.tsx",
+            "**/*.js",
+            "**/*.jsx"
+          ],
+          "description": "File patterns to include"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "build": "npm run compile",
+    "package": "vsce package",
+    "lint": "eslint src --ext ts",
+    "clean": "rimraf out"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^6.4.1",
+    "@typescript-eslint/parser": "^6.4.1",
+    "eslint": "^8.47.0",
+    "typescript": "^5.1.6",
+    "vsce": "^2.15.0",
+    "rimraf": "^5.0.1"
+  },
+  "dependencies": {
+    "axios": "^1.6.2"
+  }
+}
