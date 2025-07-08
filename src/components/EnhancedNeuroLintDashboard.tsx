@@ -1,177 +1,147 @@
-import React, { useState, useEffect } from "react";
-import { useAuth } from "../lib/auth-context";
+import React, { useState, useEffect } from 'react'
+import { useAuth } from '../lib/auth-context'
+import { createAnalysisResult, getAnalysisResults, trackUsage } from '../lib/supabase'
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import {
-  createAnalysisResult,
-  getAnalysisResults,
-  trackUsage,
-} from "../lib/supabase";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import {
-  paypalConfig,
+  getPayPalConfig,
   paypalPlans,
   createPayPalSubscription,
   formatPrice,
-} from "../lib/paypal";
-import type { AnalysisResult } from "../lib/supabase";
+  getPriceForCurrency,
+  detectUserCurrency,
+  currencyLocaleMap
+} from '../lib/paypal'
+import type { AnalysisResult } from '../lib/supabase'
 
 interface LayerInfo {
-  id: number;
-  name: string;
-  description: string;
-  status: "idle" | "running" | "complete" | "error";
+  id: number
+  name: string
+  description: string
+  status: 'idle' | 'running' | 'complete' | 'error'
 }
 
 const EnhancedNeuroLintDashboard: React.FC = () => {
-  const { user, profile, subscription, loading } = useAuth();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [results, setResults] = useState<AnalysisResult[]>([]);
-  const [currentLayer, setCurrentLayer] = useState<number | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [showBilling, setShowBilling] = useState(false);
+  const { user, profile, subscription, loading } = useAuth()
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [results, setResults] = useState<AnalysisResult[]>([])
+  const [currentLayer, setCurrentLayer] = useState<number | null>(null)
+  const [progress, setProgress] = useState(0)
+  const [showBilling, setShowBilling] = useState(false)
+  const [userCurrency, setUserCurrency] = useState<keyof typeof currencyLocaleMap>('USD')
 
   const layers: LayerInfo[] = [
-    {
-      id: 1,
-      name: "Configuration",
-      description: "TypeScript and build configuration optimization",
-      status: "idle",
-    },
-    {
-      id: 2,
-      name: "Entity Cleanup",
-      description: "Pattern fixes and code modernization",
-      status: "idle",
-    },
-    {
-      id: 3,
-      name: "Components",
-      description: "React and TypeScript specific improvements",
-      status: "idle",
-    },
-    {
-      id: 4,
-      name: "Hydration",
-      description: "SSR safety guards and runtime protection",
-      status: "idle",
-    },
-    {
-      id: 5,
-      name: "Next.js",
-      description: "App Router and framework optimizations",
-      status: "idle",
-    },
-    {
-      id: 6,
-      name: "Testing",
-      description: "Quality assurance and performance validation",
-      status: "idle",
-    },
-  ];
+    { id: 1, name: 'Configuration', description: 'TypeScript and build configuration optimization', status: 'idle' },
+    { id: 2, name: 'Entity Cleanup', description: 'Pattern fixes and code modernization', status: 'idle' },
+    { id: 3, name: 'Components', description: 'React and TypeScript specific improvements', status: 'idle' },
+    { id: 4, name: 'Hydration', description: 'SSR safety guards and runtime protection', status: 'idle' },
+    { id: 5, name: 'Next.js', description: 'App Router and framework optimizations', status: 'idle' },
+    { id: 6, name: 'Testing', description: 'Quality assurance and performance validation', status: 'idle' }
+  ]
 
-  // Load analysis results on component mount
+  // Load analysis results and detect currency on component mount
   useEffect(() => {
     if (user) {
-      loadAnalysisResults();
+      loadAnalysisResults()
     }
-  }, [user]);
+
+    // Detect user's preferred currency
+    const detectedCurrency = detectUserCurrency()
+    setUserCurrency(detectedCurrency)
+  }, [user])
 
   const loadAnalysisResults = async () => {
-    if (!user) return;
+    if (!user) return
 
-    const { data, error } = await getAnalysisResults(user.id, 5);
+    const { data, error } = await getAnalysisResults(user.id, 5)
     if (data && !error) {
-      setResults(data);
+      setResults(data)
     }
-  };
+  }
 
   const handleAnalyze = async () => {
-    if (!user) return;
+    if (!user) return
 
-    setIsAnalyzing(true);
-    setProgress(0);
-    setCurrentLayer(null);
+    setIsAnalyzing(true)
+    setProgress(0)
+    setCurrentLayer(null)
 
     // Track usage for billing
-    await trackUsage(user.id, "analysis_started");
+    await trackUsage(user.id, 'analysis_started')
 
     // Simulate layer-by-layer analysis
     for (let i = 1; i <= 6; i++) {
-      setCurrentLayer(i);
-      setProgress(i * 16.67);
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      setCurrentLayer(i)
+      setProgress(i * 16.67)
+      await new Promise(resolve => setTimeout(resolve, 600))
     }
 
     // Create real analysis result
-    const newResult: Omit<AnalysisResult, "id" | "created_at"> = {
+    const newResult: Omit<AnalysisResult, 'id' | 'created_at'> = {
       user_id: user.id,
       files_analyzed: Math.floor(Math.random() * 200) + 50,
       issues_found: Math.floor(Math.random() * 50) + 10,
       issues_fixed: Math.floor(Math.random() * 40) + 8,
       layers_used: [1, 2, 3, 4, 5, 6],
       improvements: [
-        "Fixed HTML entity encoding issues",
-        "Added missing React key properties",
-        "Implemented SSR safety guards",
-        "Upgraded TypeScript configuration",
-        "Optimized Next.js App Router usage",
-        "Enhanced error boundary coverage",
+        'Fixed HTML entity encoding issues',
+        'Added missing React key properties',
+        'Implemented SSR safety guards',
+        'Upgraded TypeScript configuration',
+        'Optimized Next.js App Router usage',
+        'Enhanced error boundary coverage'
       ],
       execution_time: Math.floor(Math.random() * 3000) + 1000,
-      cache_hit_rate: Math.floor(Math.random() * 30) + 70,
-    };
-
-    const { data: savedResult } = await createAnalysisResult(newResult);
-
-    if (savedResult) {
-      setResults((prev) => [savedResult, ...prev.slice(0, 4)]);
-      await trackUsage(user.id, "analysis_completed", {
-        execution_time: savedResult.execution_time,
-        issues_fixed: savedResult.issues_fixed,
-      });
+      cache_hit_rate: Math.floor(Math.random() * 30) + 70
     }
 
-    setIsAnalyzing(false);
-    setCurrentLayer(null);
-    setProgress(100);
-  };
+    const { data: savedResult } = await createAnalysisResult(newResult)
+
+    if (savedResult) {
+      setResults(prev => [savedResult, ...prev.slice(0, 4)])
+      await trackUsage(user.id, 'analysis_completed', {
+        execution_time: savedResult.execution_time,
+        issues_fixed: savedResult.issues_fixed
+      })
+    }
+
+    setIsAnalyzing(false)
+    setCurrentLayer(null)
+    setProgress(100)
+  }
 
   // Check subscription limits
   const canRunAnalysis = () => {
-    if (!subscription) return false; // Free tier or no subscription
-    return subscription.status === "active";
-  };
+    if (!subscription) return false // Free tier or no subscription
+    return subscription.status === 'active'
+  }
 
   const getSubscriptionMessage = () => {
     if (!subscription) {
-      return "Upgrade to Professional to run unlimited analyses";
+      return "Upgrade to Professional to run unlimited analyses"
     }
-    if (subscription.status !== "active") {
-      return "Please update your payment method to continue using NeuroLint";
+    if (subscription.status !== 'active') {
+      return "Please update your payment method to continue using NeuroLint"
     }
-    return "";
-  };
+    return ""
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white">Loading NeuroLint...</div>
       </div>
-    );
+    )
   }
 
   if (!user) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-center text-white">
-          <h1 className="text-2xl font-bold mb-4">
-            Please sign in to access NeuroLint
-          </h1>
-          <p className="text-gray-400">
-            Authentication required to use the platform
-          </p>
+          <h1 className="text-2xl font-bold mb-4">Please sign in to access NeuroLint</h1>
+          <p className="text-gray-400">Authentication required to use the platform</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -193,37 +163,32 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
               <div className="text-right">
                 <div className="text-white font-medium">{user.email}</div>
                 <div className="text-gray-400 text-sm">
-                  {subscription
-                    ? `${subscription.plan_name} Plan`
-                    : "Free Trial"}
+                  {subscription ? `${subscription.plan_name} Plan` : 'Free Trial'}
                 </div>
               </div>
               <button
                 onClick={() => setShowBilling(!showBilling)}
                 className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm"
               >
-                {subscription ? "Manage Billing" : "Upgrade"}
+                {subscription ? 'Manage Billing' : 'Upgrade'}
               </button>
             </div>
           </div>
 
           <div className="max-w-2xl">
             <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
-              Welcome back, {profile?.company || "Developer"}
+              Welcome back, {profile?.company || 'Developer'}
             </h2>
             <p className="text-lg text-gray-400 leading-relaxed">
-              Advanced 6-layer orchestration system for TypeScript, React, and
-              Next.js codebases. Enterprise-grade code analysis at your
-              fingertips.
+              Advanced 6-layer orchestration system for TypeScript, React, and Next.js codebases.
+              Enterprise-grade code analysis at your fingertips.
             </p>
           </div>
 
           {/* Subscription Status */}
           {!canRunAnalysis() && (
             <div className="mt-8 p-4 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
-              <div className="text-yellow-400 font-medium">
-                {getSubscriptionMessage()}
-              </div>
+              <div className="text-yellow-400 font-medium">{getSubscriptionMessage()}</div>
             </div>
           )}
         </header>
@@ -231,76 +196,86 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
         {/* Billing Section */}
         {showBilling && (
           <div className="mb-16 bg-gray-900 border border-gray-800 rounded-lg p-8">
-            <h3 className="text-2xl font-bold text-white mb-6">
-              Choose Your Plan
-            </h3>
-            <div className="grid md:grid-cols-3 gap-6">
-              {paypalPlans.map((plan) => (
-                <div
-                  key={plan.id}
-                  className={`border rounded-lg p-6 ${
-                    plan.popular
-                      ? "border-white bg-gray-800"
-                      : "border-gray-700"
-                  }`}
-                >
-                  {plan.popular && (
-                    <div className="text-center mb-4">
-                      <span className="bg-white text-black px-3 py-1 rounded-full text-sm font-medium">
-                        Most Popular
-                      </span>
-                    </div>
-                  )}
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-white">Choose Your Plan</h3>
 
-                  <div className="text-center mb-6">
-                    <h4 className="text-xl font-bold text-white mb-2">
-                      {plan.name}
-                    </h4>
-                    <div className="text-3xl font-bold text-white mb-1">
-                      {formatPrice(plan.price, plan.currency)}
+              {/* Currency Selector */}
+              <div className="flex items-center gap-2">
+                <span className="text-gray-400 text-sm">Currency:</span>
+                <select
+                  value={userCurrency}
+                  onChange={(e) => setUserCurrency(e.target.value as keyof typeof currencyLocaleMap)}
+                  className="bg-gray-800 border border-gray-700 rounded px-3 py-1 text-white text-sm"
+                >
+                  <option value="USD">USD ($)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="ZAR">ZAR (R)</option>
+                  <option value="AUD">AUD (AU$)</option>
+                  <option value="CAD">CAD (CA$)</option>
+                  <option value="JPY">JPY (¥)</option>
+                  <option value="INR">INR (₹)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {paypalPlans.map((plan) => {
+                const price = getPriceForCurrency(plan, userCurrency)
+                return (
+                  <div
+                    key={plan.id}
+                    className={`border rounded-lg p-6 ${
+                      plan.popular ? 'border-white bg-gray-800' : 'border-gray-700'
+                    }`}
+                  >
+                    {plan.popular && (
+                      <div className="text-center mb-4">
+                        <span className="bg-white text-black px-3 py-1 rounded-full text-sm font-medium">
+                          Most Popular
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="text-center mb-6">
+                      <h4 className="text-xl font-bold text-white mb-2">{plan.name}</h4>
+                      <div className="text-3xl font-bold text-white mb-1">
+                        {formatPrice(price, userCurrency)}
+                      </div>
+                      <div className="text-gray-400 text-sm">per {plan.interval}</div>
                     </div>
-                    <div className="text-gray-400 text-sm">
-                      per {plan.interval}
-                    </div>
-                  </div>
 
                   <ul className="space-y-2 mb-6">
                     {plan.features.map((feature, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start gap-2 text-sm text-gray-300"
-                      >
+                      <li key={index} className="flex items-start gap-2 text-sm text-gray-300">
                         <div className="w-1.5 h-1.5 bg-white rounded-full mt-2 flex-shrink-0"></div>
                         {feature}
                       </li>
                     ))}
                   </ul>
 
-                  <PayPalScriptProvider options={paypalConfig}>
+                  <PayPalScriptProvider options={getPayPalConfig(userCurrency, currencyLocaleMap[userCurrency])}>
                     <PayPalButtons
                       createSubscription={async (data, actions) => {
-                        const { subscription } = await createPayPalSubscription(
-                          plan.id,
-                          user.id,
-                        );
+                        const { subscription } = await createPayPalSubscription(plan.id, user.id)
                         return actions.subscription.create({
                           plan_id: plan.id,
-                          custom_id: subscription.id,
-                        });
+                          custom_id: subscription.id
+                        })
                       }}
                       onApprove={async (data, actions) => {
-                        console.log("PayPal subscription approved:", data);
-                        await loadAnalysisResults(); // Refresh data
-                        setShowBilling(false);
+                        console.log('PayPal subscription approved:', data)
+                        await loadAnalysisResults() // Refresh data
+                        setShowBilling(false)
                       }}
                       onError={(err) => {
-                        console.error("PayPal error:", err);
+                        console.error('PayPal error:', err)
                       }}
                       style={{
-                        layout: "vertical",
-                        color: "black",
-                        shape: "rect",
-                        label: "subscribe",
+                        layout: 'vertical',
+                        color: 'black',
+                        shape: 'rect',
+                        label: 'subscribe'
                       }}
                     />
                   </PayPalScriptProvider>
@@ -314,9 +289,7 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
         <div className="grid lg:grid-cols-3 gap-8 mb-16">
           {/* Analysis Control */}
           <div className="lg:col-span-1 bg-gray-900 border border-gray-800 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-white mb-6">
-              Run Analysis
-            </h3>
+            <h3 className="text-lg font-semibold text-white mb-6">Run Analysis</h3>
 
             {/* Progress */}
             {(isAnalyzing || progress > 0) && (
@@ -345,7 +318,7 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
                 disabled={isAnalyzing || !canRunAnalysis()}
                 className="w-full bg-white hover:bg-gray-200 disabled:bg-gray-600 text-black font-medium py-3 px-4 rounded-md transition-colors"
               >
-                {isAnalyzing ? "Analyzing..." : "Start Analysis"}
+                {isAnalyzing ? 'Analyzing...' : 'Start Analysis'}
               </button>
 
               <div className="grid grid-cols-2 gap-3">
@@ -364,9 +337,7 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
 
           {/* Results */}
           <div className="lg:col-span-2 border border-gray-800 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-white mb-6">
-              Recent Analysis Results
-            </h3>
+            <h3 className="text-lg font-semibold text-white mb-6">Recent Analysis Results</h3>
 
             {results.length > 0 ? (
               <div className="space-y-4">
@@ -374,36 +345,20 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
                   <div key={result.id} className="bg-gray-800 rounded-lg p-4">
                     <div className="grid grid-cols-4 gap-4 mb-4">
                       <div className="text-center">
-                        <div className="text-xl font-bold text-white">
-                          {result.files_analyzed}
-                        </div>
-                        <div className="text-xs text-gray-500 uppercase tracking-wide">
-                          Files
-                        </div>
+                        <div className="text-xl font-bold text-white">{result.files_analyzed}</div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">Files</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-xl font-bold text-white">
-                          {result.issues_fixed}
-                        </div>
-                        <div className="text-xs text-gray-500 uppercase tracking-wide">
-                          Fixed
-                        </div>
+                        <div className="text-xl font-bold text-white">{result.issues_fixed}</div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">Fixed</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-xl font-bold text-white">
-                          {result.execution_time}ms
-                        </div>
-                        <div className="text-xs text-gray-500 uppercase tracking-wide">
-                          Duration
-                        </div>
+                        <div className="text-xl font-bold text-white">{result.execution_time}ms</div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">Duration</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-xl font-bold text-white">
-                          {result.cache_hit_rate}%
-                        </div>
-                        <div className="text-xs text-gray-500 uppercase tracking-wide">
-                          Cache Hit
-                        </div>
+                        <div className="text-xl font-bold text-white">{result.cache_hit_rate}%</div>
+                        <div className="text-xs text-gray-500 uppercase tracking-wide">Cache Hit</div>
                       </div>
                     </div>
 
@@ -415,12 +370,8 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="text-gray-400 mb-2">
-                  No analysis results yet
-                </div>
-                <div className="text-sm text-gray-500">
-                  Run your first analysis to see results here
-                </div>
+                <div className="text-gray-400 mb-2">No analysis results yet</div>
+                <div className="text-sm text-gray-500">Run your first analysis to see results here</div>
               </div>
             )}
           </div>
@@ -428,9 +379,7 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
 
         {/* Layer Architecture */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-white mb-8">
-            6-Layer Architecture
-          </h2>
+          <h2 className="text-2xl font-bold text-white mb-8">6-Layer Architecture</h2>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {layers.map((layer) => (
@@ -438,16 +387,14 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
                 key={layer.id}
                 className={`border rounded-lg p-4 transition-all ${
                   currentLayer === layer.id
-                    ? "border-white bg-gray-800"
-                    : "border-gray-800 hover:border-gray-700"
+                    ? 'border-white bg-gray-800'
+                    : 'border-gray-800 hover:border-gray-700'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h3 className="font-medium text-white">{layer.name}</h3>
-                    <div className="text-xs text-gray-500">
-                      Layer {layer.id}
-                    </div>
+                    <div className="text-xs text-gray-500">Layer {layer.id}</div>
                   </div>
                   {currentLayer === layer.id && (
                     <div className="w-2 h-2 bg-white rounded-full"></div>
@@ -462,7 +409,7 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default EnhancedNeuroLintDashboard;
+export default EnhancedNeuroLintDashboard
