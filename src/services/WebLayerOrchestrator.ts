@@ -121,8 +121,15 @@ class WebLayerOrchestrator {
   ];
 
   constructor() {
+    // Use proxy path in development, full URL in production
     this.baseUrl =
-      import.meta.env.VITE_NEUROLINT_API_URL || "http://localhost:8001";
+      import.meta.env.VITE_NEUROLINT_API_URL ||
+      (import.meta.env.DEV ? "" : "http://localhost:8001");
+
+    console.log(
+      "🌐 WebLayerOrchestrator initialized with API URL:",
+      this.baseUrl || "proxy",
+    );
     console.log(
       "🔧 WebLayerOrchestrator initialized - will use client-side fallback if API unavailable",
     );
@@ -352,7 +359,10 @@ class WebLayerOrchestrator {
   ): Promise<string> {
     try {
       // Try API first if available
-      const response = await fetch(`${this.baseUrl}/api/execute`, {
+      const apiUrl = this.baseUrl
+        ? `${this.baseUrl}/api/execute`
+        : "/api/execute";
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -858,9 +868,13 @@ class WebLayerOrchestrator {
     try {
       // Add timeout to prevent hanging
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
-      const response = await fetch(`${this.baseUrl}/api/health`, {
+      const apiUrl = this.baseUrl
+        ? `${this.baseUrl}/api/health`
+        : "/api/health";
+
+      const response = await fetch(apiUrl, {
         signal: controller.signal,
         method: "GET",
         headers: {
@@ -872,6 +886,7 @@ class WebLayerOrchestrator {
 
       if (response.ok) {
         const data = await response.json();
+        console.log("✅ API server connection successful");
         return { online: true, version: data.version };
       } else {
         console.warn(`Server responded with status: ${response.status}`);
@@ -879,7 +894,11 @@ class WebLayerOrchestrator {
       }
     } catch (error) {
       if (error.name === "AbortError") {
-        console.warn("Server health check timed out");
+        console.warn(
+          "Server health check timed out - API server may not be running",
+        );
+      } else if (error.message.includes("Failed to fetch")) {
+        console.warn("Cannot connect to API server - using client-side mode");
       } else {
         console.warn(
           "Server not available, using client-side fallback:",

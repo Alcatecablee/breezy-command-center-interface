@@ -3,32 +3,32 @@ import { createClient } from "@supabase/supabase-js";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Validate environment variables
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    "❌ Supabase environment variables are required. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env.local file.",
-  );
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-  },
-  global: {
-    headers: {
-      "x-client-info": "neurolint-web-dashboard",
-    },
-  },
-});
-
 // Export a flag to check if Supabase is properly configured
 export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
+
+// Create supabase client only if configured, otherwise use null
+export const supabase = isSupabaseConfigured
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+      },
+      global: {
+        headers: {
+          "x-client-info": "neurolint-web-dashboard",
+        },
+      },
+    })
+  : null;
 
 // Add connection test function
 export const testSupabaseConnection = async () => {
   try {
+    if (!supabase) {
+      console.error("Supabase not configured");
+      return false;
+    }
     const { data, error } = await supabase.auth.getSession();
     if (error) {
       console.error("Supabase connection test failed:", error);
@@ -117,6 +117,7 @@ export interface UsageTracking {
 
 // Auth helpers
 export const getCurrentUser = async () => {
+  if (!supabase) return null;
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -124,6 +125,8 @@ export const getCurrentUser = async () => {
 };
 
 export const signIn = async (email: string, password: string) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -136,6 +139,8 @@ export const signUp = async (
   password: string,
   metadata?: any,
 ) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -147,12 +152,15 @@ export const signUp = async (
 };
 
 export const signOut = async () => {
+  if (!supabase) return { error: { message: "Supabase not configured" } };
   const { error } = await supabase.auth.signOut();
   return { error };
 };
 
 // Database helpers
 export const getUserProfile = async (userId: string) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase
     .from("user_profiles")
     .select("*")
@@ -163,6 +171,8 @@ export const getUserProfile = async (userId: string) => {
 };
 
 export const getProjects = async (userId: string) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase
     .from("projects")
     .select("*")
@@ -173,6 +183,8 @@ export const getProjects = async (userId: string) => {
 };
 
 export const getAnalysisResults = async (userId: string, limit = 10) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase
     .from("analysis_results")
     .select("*")
@@ -186,6 +198,8 @@ export const getAnalysisResults = async (userId: string, limit = 10) => {
 export const createAnalysisResult = async (
   result: Omit<AnalysisResult, "id" | "created_at">,
 ) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase
     .from("analysis_results")
     .insert([result])
@@ -196,6 +210,8 @@ export const createAnalysisResult = async (
 };
 
 export const getSubscription = async (userId: string) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase
     .from("subscriptions")
     .select("*")
@@ -212,6 +228,8 @@ export const trackUsage = async (
   action: string,
   metadata?: any,
 ) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase.from("usage_tracking").insert([
     {
       user_id: userId,
@@ -229,6 +247,8 @@ export const getUsageStats = async (
   startDate: string,
   endDate: string,
 ) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase
     .from("usage_tracking")
     .select("*")

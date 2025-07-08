@@ -3,11 +3,15 @@
  * Provides REST endpoints for the React dashboard to interact with CLI layers
  */
 
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
-const fs = require("fs");
-const { spawn } = require("child_process");
+import express from "express";
+import cors from "cors";
+import path from "path";
+import fs from "fs";
+import { spawn } from "child_process";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class EnhancedNeuroLintApiServer {
   constructor(port = 8001) {
@@ -42,7 +46,11 @@ class EnhancedNeuroLintApiServer {
 
     // Request logging
     this.app.use((req, res, next) => {
-      console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+      console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`, {
+        userAgent: req.get("User-Agent"),
+        origin: req.get("Origin"),
+        referer: req.get("Referer"),
+      });
       next();
     });
 
@@ -58,6 +66,23 @@ class EnhancedNeuroLintApiServer {
   }
 
   setupRoutes() {
+    // Root endpoint to handle requests from frontend
+    this.app.get("/", (req, res) => {
+      res.json({
+        name: "NeuroLint API Server",
+        version: "1.0.0",
+        status: "running",
+        timestamp: new Date().toISOString(),
+        endpoints: {
+          health: "/api/health",
+          analyze: "POST /api/analyze",
+          execute: "POST /api/execute",
+          layers: "/api/layers",
+          validate: "POST /api/validate",
+        },
+      });
+    });
+
     // Health check endpoint
     this.app.get("/api/health", (req, res) => {
       res.json({
@@ -711,9 +736,9 @@ class EnhancedNeuroLintApiServer {
 }
 
 // Start server if this file is run directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   const server = new EnhancedNeuroLintApiServer();
   server.start();
 }
 
-module.exports = { EnhancedNeuroLintApiServer };
+export { EnhancedNeuroLintApiServer };

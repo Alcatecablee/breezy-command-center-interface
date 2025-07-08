@@ -83,35 +83,39 @@ export function useNeuroLintOrchestration(): UseNeuroLintOrchestrationState &
         }));
 
         // Check server status in background (don't block initialization)
-        webLayerOrchestrator
-          .getServerStatus()
-          .then((serverStatus) => {
-            setState((prev) => ({
-              ...prev,
-              serverOnline: serverStatus.online,
-              serverVersion: serverStatus.version,
-            }));
+        // Use setTimeout to prevent blocking the UI thread
+        setTimeout(() => {
+          webLayerOrchestrator
+            .getServerStatus()
+            .then((serverStatus) => {
+              setState((prev) => ({
+                ...prev,
+                serverOnline: serverStatus.online,
+                serverVersion: serverStatus.version,
+              }));
 
-            console.log("🔧 NeuroLint Orchestration initialized", {
-              layers: layers.length,
-              serverOnline: serverStatus.online,
+              console.log("🔧 NeuroLint Orchestration initialized", {
+                layers: layers.length,
+                serverOnline: serverStatus.online,
+              });
+            })
+            .catch((error) => {
+              console.warn("Server status check failed:", error);
+              setState((prev) => ({
+                ...prev,
+                serverOnline: false,
+                warnings: [
+                  ...prev.warnings,
+                  "API server is not available - using client-side mode",
+                ],
+              }));
             });
-          })
-          .catch((error) => {
-            console.warn("Server status check failed:", error);
-            setState((prev) => ({
-              ...prev,
-              serverOnline: false,
-              warnings: [
-                ...prev.warnings,
-                "API server is not available - using client-side mode",
-              ],
-            }));
-          });
+        }, 100);
       } catch (error) {
+        console.error("Failed to initialize orchestration:", error);
         setState((prev) => ({
           ...prev,
-          error: `Failed to initialize orchestration: ${error.message}`,
+          error: `Failed to initialize orchestration: ${error?.message || "Unknown error"}`,
         }));
       }
     };
