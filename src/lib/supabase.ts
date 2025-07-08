@@ -10,10 +10,37 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+  global: {
+    headers: {
+      "x-client-info": "neurolint-web-dashboard",
+    },
+  },
+});
 
 // Export a flag to check if Supabase is properly configured
 export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
+
+// Add connection test function
+export const testSupabaseConnection = async () => {
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error("Supabase connection test failed:", error);
+      return false;
+    }
+    console.log("✅ Supabase connection successful");
+    return true;
+  } catch (error) {
+    console.error("Supabase connection test error:", error);
+    return false;
+  }
+};
 
 // Database Types
 export interface User {
