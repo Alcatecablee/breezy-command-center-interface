@@ -155,6 +155,8 @@ export const signOut = async () => {
 
 // Database helpers
 export const getUserProfile = async (userId: string) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase
     .from("user_profiles")
     .select("*")
