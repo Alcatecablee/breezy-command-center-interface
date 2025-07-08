@@ -150,35 +150,4 @@ export const formatPrice = (price: number, currency: "USD" | "ZAR") => {
   }).format(price);
 };
 
-// Usage tracking for billing
-export const trackUsage = async (
-  userId: string,
-  action: string,
-  metadata?: any,
-) => {
-  const { data, error } = await supabase.from("usage_tracking").insert([
-    {
-      user_id: userId,
-      action,
-      metadata,
-      created_at: new Date().toISOString(),
-    },
-  ]);
-
-  return { data, error };
-};
-
-export const getUsageStats = async (
-  userId: string,
-  startDate: string,
-  endDate: string,
-) => {
-  const { data, error } = await supabase
-    .from("usage_tracking")
-    .select("*")
-    .eq("user_id", userId)
-    .gte("created_at", startDate)
-    .lte("created_at", endDate);
-
-  return { data, error };
-};
+// Note: trackUsage and getUsageStats functions are now in supabase.ts
