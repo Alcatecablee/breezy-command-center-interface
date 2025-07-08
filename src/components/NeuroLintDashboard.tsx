@@ -184,16 +184,16 @@ const NeuroLintDashboard: React.FC = () => {
               <button
                 onClick={handleAnalyze}
                 disabled={isAnalyzing}
-                className="w-full bg-black hover:bg-gray-800 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-md transition-colors"
+                className="w-full bg-white hover:bg-gray-200 disabled:bg-gray-600 text-black font-medium py-3 px-4 rounded-md transition-colors"
               >
                 {isAnalyzing ? "Analyzing..." : "Start Analysis"}
               </button>
 
               <div className="grid grid-cols-2 gap-3">
-                <button className="border border-gray-300 hover:border-gray-400 text-gray-700 font-medium py-2 px-3 rounded-md transition-colors text-sm">
+                <button className="border border-gray-700 hover:border-gray-600 text-gray-300 font-medium py-2 px-3 rounded-md transition-colors text-sm">
                   Quick Fix
                 </button>
-                <button className="border border-gray-300 hover:border-gray-400 text-gray-700 font-medium py-2 px-3 rounded-md transition-colors text-sm">
+                <button className="border border-gray-700 hover:border-gray-600 text-gray-300 font-medium py-2 px-3 rounded-md transition-colors text-sm">
                   Configure
                 </button>
               </div>
