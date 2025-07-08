@@ -15,9 +15,9 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light;
-  color: #000;
-  background-color: #fff;
+  color-scheme: dark;
+  color: rgb(255, 255, 255);
+  background-color: rgb(0, 0, 0);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -34,8 +34,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #fff;
-  color: #000;
+  background: rgb(0, 0, 0);
+  color: rgb(255, 255, 255);
   overflow-x: hidden;
 }
 
@@ -47,13 +47,13 @@ body {
 
 /* Focus styles */
 button:focus-visible {
-  outline: 2px solid #000;
+  outline: 2px solid #fff;
   outline-offset: 2px;
 }
 
 /* Text selection */
 ::selection {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Scrollbar styling */
@@ -66,10 +66,10 @@ button:focus-visible {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #e5e5e5;
+  background: #374151;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #d4d4d4;
+  background: #4b5563;
 }
