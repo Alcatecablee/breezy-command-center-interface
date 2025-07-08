@@ -12,7 +12,7 @@
     "dev": "npx vite",
     "api": "node src/server/enhancedApiServer.js",
     "dev:full": "concurrently \"npm run api\" \"npm run dev\"",
-    "build": "node scripts/build.js",
+    "build": "vite build node scripts/build.js",
     "test": "echo 'CLI tests would run here'",
     "clean": "rm -rf dist/ build/",
     "package": "npm pack"
