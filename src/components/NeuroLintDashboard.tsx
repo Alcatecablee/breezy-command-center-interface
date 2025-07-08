@@ -106,7 +106,7 @@ const NeuroLintDashboard: React.FC = () => {
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2F650a7e0d23ac407b922479927bc68a9d%2F1286c7bdebf845ef9bedd75d9d3ba4c3?format=webp&width=800"
               alt="NeuroLint"
-              className="w-8 h-8"
+              className="w-12 h-12"
             />
             <h1 className="text-2xl font-semibold text-white">NeuroLint</h1>
           </div>
@@ -396,7 +396,7 @@ const NeuroLintDashboard: React.FC = () => {
             <img
               src="https://cdn.builder.io/api/v1/image/assets%2F650a7e0d23ac407b922479927bc68a9d%2F1286c7bdebf845ef9bedd75d9d3ba4c3?format=webp&width=800"
               alt="NeuroLint"
-              className="w-4 h-4"
+              className="w-6 h-6"
             />
             <span className="font-medium text-white">NeuroLint Enterprise</span>
           </div>
