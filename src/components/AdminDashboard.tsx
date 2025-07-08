@@ -196,7 +196,8 @@ export default function AdminDashboard() {
 
     setLoading(true);
     try {
-      const testSupabase = require("@supabase/supabase-js").createClient(
+      const { createClient } = await import("@supabase/supabase-js");
+      const testSupabase = createClient(
         supabaseConfig.url,
         supabaseConfig.anonKey,
       );
