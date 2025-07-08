@@ -123,6 +123,11 @@ class WebLayerOrchestrator {
   constructor() {
     this.baseUrl =
       import.meta.env.VITE_NEUROLINT_API_URL || "http://localhost:8001";
+
+    console.log(
+      "🌐 WebLayerOrchestrator initialized with API URL:",
+      this.baseUrl,
+    );
     console.log(
       "🔧 WebLayerOrchestrator initialized - will use client-side fallback if API unavailable",
     );
