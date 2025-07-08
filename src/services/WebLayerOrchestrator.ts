@@ -853,15 +853,38 @@ class WebLayerOrchestrator {
 
   async getServerStatus(): Promise<{ online: boolean; version?: string }> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/health`);
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+
+      const response = await fetch(`${this.baseUrl}/api/health`, {
+        signal: controller.signal,
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      clearTimeout(timeoutId);
+
       if (response.ok) {
         const data = await response.json();
         return { online: true, version: data.version };
+      } else {
+        console.warn(`Server responded with status: ${response.status}`);
+        return { online: false };
       }
     } catch (error) {
-      console.warn("Server not available, using client-side fallback");
+      if (error.name === "AbortError") {
+        console.warn("Server health check timed out");
+      } else {
+        console.warn(
+          "Server not available, using client-side fallback:",
+          error.message,
+        );
+      }
+      return { online: false };
     }
-    return { online: false };
   }
 }
 
