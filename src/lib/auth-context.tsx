@@ -163,6 +163,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     return () => {
+      clearTimeout(fallbackTimer);
       if (authSubscription) {
         authSubscription.unsubscribe();
       }
