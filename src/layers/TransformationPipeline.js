@@ -309,7 +309,7 @@ class TransformationPipeline {
     const metrics = this.getPerformanceMetrics();
 
     // Performance recommendations
-    if (metrics.slowestLayer.executionTime > 5000) {
+    if (metrics.slowestLayer && metrics.slowestLayer.executionTime > 5000) {
       recommendations.push({
         type: "performance",
         priority: "medium",
