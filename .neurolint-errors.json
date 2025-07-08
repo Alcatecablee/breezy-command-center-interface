@@ -1,0 +1,11 @@
+[
+  {
+    "timestamp": "2025-07-08T11:04:42.844Z",
+    "operation": "main",
+    "error": {
+      "message": "(outputHelp)",
+      "code": "commander.help",
+      "stack": "CommanderError: (outputHelp)\n    at Command._exit (/app/code/node_modules/commander/lib/command.js:461:26)\n    at Command.help (/app/code/node_modules/commander/lib/command.js:2079:10)\n    at Command._parseCommand (/app/code/node_modules/commander/lib/command.js:1275:12)\n    at Command.parse (/app/code/node_modules/commander/lib/command.js:910:10)\n    at file:///app/code/src/index.js:264:13"
+    }
+  }
+]
