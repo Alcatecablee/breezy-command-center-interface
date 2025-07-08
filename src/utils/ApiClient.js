@@ -27,6 +27,7 @@ class ApiClient {
     this._authLoaded = true;
   }
 
+  _createClient() {
     this.client = axios.create({
       baseURL: this.baseURL,
       timeout: this.timeout,
@@ -41,6 +42,7 @@ class ApiClient {
       this.client.defaults.headers.common["Authorization"] =
         `Bearer ${this.apiKey}`;
     }
+  }
 
     // Add response interceptor for error handling
     this.client.interceptors.response.use(
