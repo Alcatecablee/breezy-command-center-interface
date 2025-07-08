@@ -46,7 +46,11 @@ class EnhancedNeuroLintApiServer {
 
     // Request logging
     this.app.use((req, res, next) => {
-      console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+      console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`, {
+        userAgent: req.get("User-Agent"),
+        origin: req.get("Origin"),
+        referer: req.get("Referer"),
+      });
       next();
     });
 
