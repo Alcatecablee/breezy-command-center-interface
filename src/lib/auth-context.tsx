@@ -44,14 +44,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const loadUserData = async (currentUser: User) => {
     try {
-      // Check database setup first
-      const dbStatus = await checkDatabaseSetup();
+      // Check database setup first (with timeout)
+      const dbCheckPromise = checkDatabaseSetup();
+      const timeoutPromise = new Promise((resolve) =>
+        setTimeout(
+          () =>
+            resolve({ isSetup: false, missingTables: [], error: "timeout" }),
+          3000,
+        ),
+      );
+
+      const dbStatus = (await Promise.race([
+        dbCheckPromise,
+        timeoutPromise,
+      ])) as any;
+
       if (!dbStatus.isSetup) {
         console.warn(
-          "Database not fully set up. Missing tables:",
-          dbStatus.missingTables,
+          "Database not fully set up:",
+          dbStatus.missingTables?.length > 0
+            ? dbStatus.missingTables
+            : "Cannot connect to database",
         );
-        // Still try to load user data, but it might fail
+        // Don't try to load user data if database isn't set up
+        return;
       }
 
       // Initialize user profile if needed
@@ -66,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setSubscription(subscriptionData);
     } catch (error) {
       console.error("Error loading user data:", error);
+      // Don't block the app if user data loading fails
     }
   };
 
