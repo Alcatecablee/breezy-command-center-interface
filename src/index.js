@@ -152,7 +152,7 @@ try {
     process.exit(0);
   }
 
-  console.error(chalk.red("❌ Error:"), err.message);
+  console.error(chalk.red("Error:"), err.message);
 
   if (program.opts().debug) {
     console.error(chalk.gray(err.stack));
@@ -169,32 +169,31 @@ if (process.argv.length <= 2) {
 
 function displayWelcome() {
   const welcome = boxen(
-    chalk.bold.blue("NeuroLint CLI") +
+    chalk.bold("NeuroLint CLI") +
       "\n\n" +
       chalk.gray("Advanced rule-based code analysis and transformation tool") +
       "\n" +
       chalk.gray("Version: ") +
       chalk.white(packageJson.version) +
       "\n\n" +
-      chalk.yellow("Quick Start:") +
+      chalk.white("Quick Start:") +
       "\n" +
       chalk.white("  neurolint init          ") +
-      chalk.gray("# Initialize project") +
+      chalk.gray("Initialize project") +
       "\n" +
       chalk.white("  neurolint analyze       ") +
-      chalk.gray("# Analyze code") +
+      chalk.gray("Analyze code") +
       "\n" +
       chalk.white("  neurolint fix --dry-run ") +
-      chalk.gray("# Preview fixes") +
+      chalk.gray("Preview fixes") +
       "\n" +
       chalk.white("  neurolint login         ") +
-      chalk.gray("# Authenticate"),
+      chalk.gray("Authenticate"),
     {
       padding: 1,
       margin: 1,
       borderStyle: "round",
       borderColor: "blue",
-      backgroundColor: "black",
     },
   );
 

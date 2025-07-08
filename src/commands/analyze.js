@@ -34,7 +34,7 @@ async function analyzeCommand(targetPath, options) {
     spinner.succeed(`Found ${files.length} files to analyze`);
 
     // Execute analysis
-    console.log(chalk.blue("🔍 Starting NeuroLint Analysis"));
+    console.log(chalk.blue("Starting NeuroLint Analysis"));
     console.log(chalk.gray("=".repeat(50)));
 
     const results = await executeAnalysis(files, layers, options);
@@ -95,7 +95,7 @@ async function executeAnalysis(files, layers, options) {
       return results;
     }
   } catch (error) {
-    console.log(chalk.yellow("⚠️  API unavailable, using local analysis"));
+    console.log(chalk.yellow("API unavailable, using local analysis"));
   }
 
   // Local analysis using layer scripts
@@ -141,7 +141,7 @@ function displayResults(results, format) {
 }
 
 function displaySummary(results) {
-  console.log(chalk.bold("📊 Analysis Summary"));
+  console.log(chalk.bold("Analysis Summary"));
   console.log(chalk.gray("=================="));
   console.log(`Files analyzed: ${chalk.white(results.summary.filesAnalyzed)}`);
   console.log(`Issues found: ${chalk.white(results.summary.issuesFound)}`);
@@ -152,10 +152,10 @@ function displaySummary(results) {
 
   if (results.summary.issuesFound > 0) {
     console.log(
-      chalk.yellow(`\n💡 Run 'neurolint fix' to automatically fix issues`),
+      chalk.yellow(`\nRun 'neurolint fix' to automatically fix issues`),
     );
   } else {
-    console.log(chalk.green("\n✅ No issues found!"));
+    console.log(chalk.green("\nNo issues found!"));
   }
 }
 
@@ -189,8 +189,8 @@ function displayTable(results) {
     console.log(chalk.gray("=".repeat(50)));
 
     issues.slice(0, 10).forEach((issue, index) => {
-      const severity = getSeverityIcon(issue.severity);
-      console.log(`${severity} ${chalk.blue(issue.file)}`);
+      const severity = getSeverityLevel(issue.severity);
+      console.log(`[${severity}] ${chalk.blue(issue.file)}`);
       console.log(
         `   ${chalk.yellow(issue.rule || issue.type)}: ${issue.message}`,
       );
@@ -205,25 +205,25 @@ function displayTable(results) {
     }
 
     console.log(
-      chalk.yellow(`💡 Run 'neurolint fix' to automatically fix issues`),
+      chalk.yellow(`Run 'neurolint fix' to automatically fix issues`),
     );
   } else {
-    console.log(chalk.green("\n✅ No issues found! Your code looks great."));
+    console.log(chalk.green("\nNo issues found! Your code looks great."));
   }
 }
 
-function getSeverityIcon(severity) {
+function getSeverityLevel(severity) {
   switch (severity) {
     case "critical":
-      return "🔴";
+      return "CRIT";
     case "high":
-      return "🟠";
+      return "HIGH";
     case "medium":
-      return "🟡";
+      return "MED ";
     case "low":
-      return "🟢";
+      return "LOW ";
     default:
-      return "📝";
+      return "INFO";
   }
 }
 
