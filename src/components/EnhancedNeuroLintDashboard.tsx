@@ -388,26 +388,18 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
 
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <div className="text-white font-medium">
-                  {user ? user.email : "Demo User"}
-                </div>
+                <div className="text-white font-medium">{user.email}</div>
                 <div className="text-gray-400 text-sm">
-                  {user
-                    ? subscription
-                      ? `${subscription.plan_name} Plan`
-                      : "Free Trial"
-                    : "Demo Mode"}
+                  {subscription
+                    ? `${subscription.plan_name} Plan`
+                    : "Free Tier"}
                 </div>
               </div>
               <button
                 onClick={() => setShowBilling(!showBilling)}
                 className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm"
               >
-                {user
-                  ? subscription
-                    ? "Manage Billing"
-                    : "Upgrade"
-                  : "View Plans"}
+                {subscription ? "Manage Billing" : "Upgrade"}
               </button>
             </div>
           </div>
