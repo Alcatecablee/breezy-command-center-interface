@@ -113,6 +113,7 @@ export interface UsageTracking {
 
 // Auth helpers
 export const getCurrentUser = async () => {
+  if (!supabase) return null;
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -120,6 +121,8 @@ export const getCurrentUser = async () => {
 };
 
 export const signIn = async (email: string, password: string) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -132,6 +135,8 @@ export const signUp = async (
   password: string,
   metadata?: any,
 ) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -143,6 +148,7 @@ export const signUp = async (
 };
 
 export const signOut = async () => {
+  if (!supabase) return { error: { message: "Supabase not configured" } };
   const { error } = await supabase.auth.signOut();
   return { error };
 };
