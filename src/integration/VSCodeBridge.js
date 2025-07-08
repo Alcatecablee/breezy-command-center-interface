@@ -103,7 +103,7 @@ class VSCodeBridge {
       });
 
       // Import and use the analyze command
-      const { analyzeCommand } = require("../commands/analyze");
+      const { analyzeCommand } = await import("../commands/analyze.js");
 
       // Capture results by overriding console methods temporarily
       const originalLog = console.log;
