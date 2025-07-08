@@ -96,19 +96,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // Check active sessions and sets the user
     const getSession = async () => {
       try {
-        // Add timeout to prevent hanging
-        const sessionPromise = supabase.auth.getSession();
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Session check timeout")), 5000),
-        );
-
+        // Simple session check without aggressive timeout
         const {
           data: { session },
-        } = (await Promise.race([sessionPromise, timeoutPromise])) as any;
-        setUser(session?.user ?? null);
+          error,
+        } = await supabase.auth.getSession();
 
-        if (session?.user) {
-          await loadUserData(session.user);
+        if (error) {
+          console.error("Session check error:", error);
+          setUser(null);
+        } else {
+          setUser(session?.user ?? null);
+
+          if (session?.user) {
+            // Load user data in background, don't block UI
+            loadUserData(session.user).catch((error) => {
+              console.warn("Background user data loading failed:", error);
+            });
+          }
         }
       } catch (error) {
         console.error("Error getting session:", error);
