@@ -162,18 +162,18 @@ const NeuroLintDashboard: React.FC = () => {
             {/* Progress */}
             {(isAnalyzing || progress > 0) && (
               <div className="mb-6">
-                <div className="flex justify-between text-sm text-gray-600 mb-2">
+                <div className="flex justify-between text-sm text-gray-400 mb-2">
                   <span>Processing layers</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-1">
+                <div className="w-full bg-gray-800 rounded-full h-1">
                   <div
-                    className="h-1 bg-black rounded-full transition-all duration-300"
+                    className="h-1 bg-white rounded-full transition-all duration-300"
                     style={{ width: `${progress}%` }}
                   ></div>
                 </div>
                 {currentLayer && (
-                  <div className="text-sm text-gray-600 mt-2">
+                  <div className="text-sm text-gray-400 mt-2">
                     Layer {currentLayer}: {layers[currentLayer - 1]?.name}
                   </div>
                 )}
