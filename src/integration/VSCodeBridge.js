@@ -1,8 +1,9 @@
-
-const fs = require("fs");
-const path = require("path");
-const WebSocket = require("ws");
-const chalk = require("chalk");
+import fs from "fs";
+import path from "path";
+import WebSocket from "ws";
+import chalk from "chalk";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 class VSCodeBridge {
   constructor() {
@@ -19,19 +20,21 @@ class VSCodeBridge {
       this.server = new WebSocket.Server({ port: this.port });
       this.setupEventHandlers();
       this.isRunning = true;
-      
+
       console.log(chalk.blue(`🔗 VS Code Bridge started on port ${this.port}`));
     } catch (error) {
-      console.error(chalk.red("Failed to start VS Code Bridge:", error.message));
+      console.error(
+        chalk.red("Failed to start VS Code Bridge:", error.message),
+      );
     }
   }
 
   setupEventHandlers() {
-    this.server.on('connection', (ws) => {
+    this.server.on("connection", (ws) => {
       this.clients.add(ws);
       console.log(chalk.gray("VS Code extension connected"));
 
-      ws.on('message', async (data) => {
+      ws.on("message", async (data) => {
         try {
           const message = JSON.parse(data.toString());
           await this.handleMessage(ws, message);
@@ -40,27 +43,27 @@ class VSCodeBridge {
         }
       });
 
-      ws.on('close', () => {
+      ws.on("close", () => {
         this.clients.delete(ws);
         console.log(chalk.gray("VS Code extension disconnected"));
       });
 
-      ws.on('error', (error) => {
+      ws.on("error", (error) => {
         console.warn(chalk.yellow("WebSocket error:", error.message));
         this.clients.delete(ws);
       });
 
       // Send welcome message
       this.send(ws, {
-        type: 'welcome',
+        type: "welcome",
         data: {
-          message: 'Connected to NeuroLint CLI',
-          version: require('../../package.json').version
-        }
+          message: "Connected to NeuroLint CLI",
+          version: require("../../package.json").version,
+        },
       });
     });
 
-    this.server.on('error', (error) => {
+    this.server.on("error", (error) => {
       console.error(chalk.red("WebSocket server error:", error.message));
     });
   }
@@ -69,22 +72,22 @@ class VSCodeBridge {
     const { type, data } = message;
 
     switch (type) {
-      case 'analyze':
+      case "analyze":
         await this.handleAnalyzeRequest(ws, data);
         break;
-      
-      case 'fix':
+
+      case "fix":
         await this.handleFixRequest(ws, data);
         break;
-      
-      case 'status':
+
+      case "status":
         await this.handleStatusRequest(ws, data);
         break;
-      
-      case 'config':
+
+      case "config":
         await this.handleConfigRequest(ws, data);
         break;
-      
+
       default:
         this.sendError(ws, `Unknown message type: ${type}`);
     }
@@ -93,37 +96,36 @@ class VSCodeBridge {
   async handleAnalyzeRequest(ws, data) {
     try {
       const { files, layers, options = {} } = data;
-      
+
       this.send(ws, {
-        type: 'analysis-started',
-        data: { files: files.length, layers }
+        type: "analysis-started",
+        data: { files: files.length, layers },
       });
 
       // Import and use the analyze command
-      const { analyzeCommand } = require('../commands/analyze');
-      
+      const { analyzeCommand } = require("../commands/analyze");
+
       // Capture results by overriding console methods temporarily
       const originalLog = console.log;
       const results = [];
-      
+
       console.log = (...args) => {
-        results.push(args.join(' '));
+        results.push(args.join(" "));
         originalLog(...args);
       };
 
-      await analyzeCommand(files[0] || '.', {
-        layers: layers.join(','),
-        output: 'json',
-        ...options
+      await analyzeCommand(files[0] || ".", {
+        layers: layers.join(","),
+        output: "json",
+        ...options,
       });
 
       console.log = originalLog;
 
       this.send(ws, {
-        type: 'analysis-complete',
-        data: { results }
+        type: "analysis-complete",
+        data: { results },
       });
-
     } catch (error) {
       this.sendError(ws, `Analysis failed: ${error.message}`);
     }
@@ -132,26 +134,25 @@ class VSCodeBridge {
   async handleFixRequest(ws, data) {
     try {
       const { files, layers, options = {} } = data;
-      
+
       this.send(ws, {
-        type: 'fix-started',
-        data: { files: files.length, layers }
+        type: "fix-started",
+        data: { files: files.length, layers },
       });
 
-      const { fixCommand } = require('../commands/fix');
-      
-      await fixCommand(files[0] || '.', {
-        layers: layers.join(','),
+      const { fixCommand } = require("../commands/fix");
+
+      await fixCommand(files[0] || ".", {
+        layers: layers.join(","),
         dryRun: options.preview || false,
         backup: options.backup !== false,
-        ...options
+        ...options,
       });
 
       this.send(ws, {
-        type: 'fix-complete',
-        data: { message: 'Fixes applied successfully' }
+        type: "fix-complete",
+        data: { message: "Fixes applied successfully" },
       });
-
     } catch (error) {
       this.sendError(ws, `Fix failed: ${error.message}`);
     }
@@ -159,22 +160,21 @@ class VSCodeBridge {
 
   async handleStatusRequest(ws, data) {
     try {
-      const { statusCommand } = require('../commands/status');
-      const { ConfigManager } = require('../utils/ConfigManager');
-      
+      const { statusCommand } = require("../commands/status");
+      const { ConfigManager } = require("../utils/ConfigManager");
+
       const config = ConfigManager.getConfig();
       const status = {
         configured: !!config,
-        apiUrl: config?.api?.url || 'Not configured',
+        apiUrl: config?.api?.url || "Not configured",
         layers: config?.layers?.enabled || [],
-        lastAnalysis: this.getLastAnalysisTime()
+        lastAnalysis: this.getLastAnalysisTime(),
       };
 
       this.send(ws, {
-        type: 'status-response',
-        data: status
+        type: "status-response",
+        data: status,
       });
-
     } catch (error) {
       this.sendError(ws, `Status check failed: ${error.message}`);
     }
@@ -182,22 +182,21 @@ class VSCodeBridge {
 
   async handleConfigRequest(ws, data) {
     try {
-      const { ConfigManager } = require('../utils/ConfigManager');
-      
-      if (data.action === 'get') {
+      const { ConfigManager } = require("../utils/ConfigManager");
+
+      if (data.action === "get") {
         const config = ConfigManager.getConfig();
         this.send(ws, {
-          type: 'config-response',
-          data: config
+          type: "config-response",
+          data: config,
         });
-      } else if (data.action === 'set') {
+      } else if (data.action === "set") {
         ConfigManager.setConfig(data.config);
         this.send(ws, {
-          type: 'config-updated',
-          data: { message: 'Configuration updated' }
+          type: "config-updated",
+          data: { message: "Configuration updated" },
         });
       }
-
     } catch (error) {
       this.sendError(ws, `Config operation failed: ${error.message}`);
     }
@@ -211,13 +210,13 @@ class VSCodeBridge {
 
   sendError(ws, error) {
     this.send(ws, {
-      type: 'error',
-      data: { error }
+      type: "error",
+      data: { error },
     });
   }
 
   broadcast(message) {
-    this.clients.forEach(client => {
+    this.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify(message));
       }
@@ -226,9 +225,9 @@ class VSCodeBridge {
 
   getLastAnalysisTime() {
     try {
-      const logPath = path.join(process.cwd(), '.neurolint-log.json');
+      const logPath = path.join(process.cwd(), ".neurolint-log.json");
       if (fs.existsSync(logPath)) {
-        const log = JSON.parse(fs.readFileSync(logPath, 'utf8'));
+        const log = JSON.parse(fs.readFileSync(logPath, "utf8"));
         return log.lastAnalysis || null;
       }
     } catch (error) {
@@ -239,7 +238,7 @@ class VSCodeBridge {
 
   stop() {
     if (this.server) {
-      this.clients.forEach(client => {
+      this.clients.forEach((client) => {
         client.close();
       });
       this.server.close();
