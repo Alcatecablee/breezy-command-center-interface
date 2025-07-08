@@ -117,4 +117,4 @@ class ErrorHandler {
   }
 }
 
-module.exports = { ErrorHandler };
+export { ErrorHandler };
