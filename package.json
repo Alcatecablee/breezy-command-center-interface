@@ -4,7 +4,7 @@
   "description": "Advanced rule-based code analysis and transformation tool using AST parsing and sophisticated pattern matching",
   "main": "src/index.js",
   "bin": {
-    "neurolint": "./bin/neurolint.js"
+    "neurolint": "./neurolint"
   },
   "scripts": {
     "dev": "node src/index.js",
