@@ -359,7 +359,10 @@ class WebLayerOrchestrator {
   ): Promise<string> {
     try {
       // Try API first if available
-      const response = await fetch(`${this.baseUrl}/api/execute`, {
+      const apiUrl = this.baseUrl
+        ? `${this.baseUrl}/api/execute`
+        : "/api/execute";
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
