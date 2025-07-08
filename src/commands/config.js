@@ -121,13 +121,11 @@ async function resetConfig() {
 
       console.log(
         chalk.green(
-          "✅ Configuration reset. Run `neurolint init` to create new config.",
+          "Configuration reset. Run `neurolint init` to create new config.",
         ),
       );
     } catch (error) {
-      console.log(
-        chalk.red(`❌ Failed to reset configuration: ${error.message}`),
-      );
+      console.log(chalk.red(`Failed to reset configuration: ${error.message}`));
     }
   } else {
     console.log(chalk.gray("Configuration reset cancelled."));
