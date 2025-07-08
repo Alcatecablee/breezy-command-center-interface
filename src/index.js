@@ -160,8 +160,8 @@ program
 program
   .command("logout")
   .description("Logout from NeuroLint API")
-  .action(() => {
-    const { logout } = require("./commands/auth");
+  .action(async () => {
+    const { logout } = await import("./commands/auth.js");
     logout();
   });
 
