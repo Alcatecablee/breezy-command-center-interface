@@ -6,7 +6,7 @@ const { statusCommand } = require("./status");
 const { configCommand } = require("./config");
 
 async function interactiveCommand(options) {
-  console.log(chalk.bold.blue("🚀 NeuroLint Interactive Mode"));
+  console.log(chalk.bold.blue("NeuroLint Interactive Mode"));
   console.log(chalk.gray("=============================="));
   console.log();
   console.log(chalk.yellow("Available commands:"));
@@ -73,17 +73,17 @@ async function interactiveCommand(options) {
 
         case "clear":
           console.clear();
-          console.log(chalk.bold.blue("🚀 NeuroLint Interactive Mode"));
+          console.log(chalk.bold.blue("NeuroLint Interactive Mode"));
           console.log(chalk.gray("=============================="));
           break;
 
         default:
-          console.log(chalk.red(`❌ Unknown command: ${command}`));
+          console.log(chalk.red(`Unknown command: ${command}`));
           console.log(chalk.gray('Type "help" for available commands'));
           break;
       }
     } catch (error) {
-      console.log(chalk.red(`❌ Error: ${error.message}`));
+      console.log(chalk.red(`Error: ${error.message}`));
     }
 
     console.log();
@@ -217,7 +217,7 @@ function showHelp() {
     console.log();
   });
 
-  console.log(chalk.bold("🔧 General Commands:"));
+  console.log(chalk.bold("General Commands:"));
   console.log(
     `${chalk.yellow("help")} ${chalk.gray("(h, ?)")} - Show this help`,
   );
@@ -227,7 +227,7 @@ function showHelp() {
   );
   console.log();
 
-  console.log(chalk.bold("💡 Tips:"));
+  console.log(chalk.bold("Tips:"));
   console.log("• Use Tab completion for commands");
   console.log("• Press Ctrl+C to exit or get prompted");
   console.log("• Add --dry-run to preview changes");

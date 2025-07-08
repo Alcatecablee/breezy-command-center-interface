@@ -15,7 +15,7 @@ async function configCommand(options) {
       await interactiveConfig();
     }
   } catch (error) {
-    console.error(chalk.red("❌ Config error:"), error.message);
+    console.error(chalk.red("Config error:"), error.message);
     if (options.debug) {
       console.error(error.stack);
     }
@@ -39,7 +39,7 @@ async function showConfig() {
     console.log();
 
     // Layer Details
-    console.log(chalk.yellow("🔧 Layer Configuration:"));
+    console.log(chalk.yellow("Layer Configuration:"));
     config.layers.enabled.forEach((layer) => {
       const layerConfig = config.layers.config[layer];
       if (layerConfig) {
@@ -51,13 +51,13 @@ async function showConfig() {
     console.log();
 
     // File Patterns
-    console.log(chalk.yellow("📁 File Patterns:"));
+    console.log(chalk.yellow("File Patterns:"));
     console.log(`   Include: ${chalk.white(config.files.include.join(", "))}`);
     console.log(`   Exclude: ${chalk.white(config.files.exclude.join(", "))}`);
     console.log();
 
     // Output Settings
-    console.log(chalk.yellow("📊 Output Settings:"));
+    console.log(chalk.yellow("Output Settings:"));
     console.log(`   Format: ${chalk.white(config.output.format)}`);
     console.log(`   Verbose: ${chalk.white(config.output.verbose)}`);
     console.log();
@@ -69,7 +69,7 @@ async function showConfig() {
     console.log(`   Retries: ${chalk.white(config.api.retries)}`);
   } catch (error) {
     console.log(
-      chalk.red("❌ No configuration found. Run `neurolint init` first."),
+      chalk.red("No configuration found. Run `neurolint init` first."),
     );
   }
 }
@@ -78,7 +78,7 @@ async function setConfig(keyValue) {
   const [key, value] = keyValue.split("=");
 
   if (!key || value === undefined) {
-    console.log(chalk.red("❌ Invalid format. Use: --set key=value"));
+    console.log(chalk.red("Invalid format. Use: --set key=value"));
     return;
   }
 
@@ -91,11 +91,9 @@ async function setConfig(keyValue) {
     // Save updated config
     ConfigManager.saveConfig(config);
 
-    console.log(chalk.green(`✅ Configuration updated: ${key} = ${value}`));
+    console.log(chalk.green(`Configuration updated: ${key} = ${value}`));
   } catch (error) {
-    console.log(
-      chalk.red(`❌ Failed to update configuration: ${error.message}`),
-    );
+    console.log(chalk.red(`Failed to update configuration: ${error.message}`));
   }
 }
 
@@ -151,11 +149,11 @@ async function interactiveConfig() {
     const config = ConfigManager.getConfig();
 
     // Layer selection
-    console.log(chalk.yellow("🔧 Layer Configuration:"));
+    console.log(chalk.yellow("Layer Configuration:"));
     console.log("Available layers:");
     Object.entries(config.layers.config).forEach(([num, layer]) => {
       const enabled = config.layers.enabled.includes(parseInt(num));
-      const status = enabled ? chalk.green("✅") : chalk.gray("❌");
+      const status = enabled ? chalk.green("[ON]") : chalk.gray("[OFF]");
       console.log(`   ${status} ${num}. ${layer.name}`);
     });
 
@@ -172,7 +170,7 @@ async function interactiveConfig() {
         .map((l) => parseInt(l.trim()))
         .filter((l) => !isNaN(l));
       config.layers.enabled = newLayers;
-      console.log(chalk.green(`✅ Enabled layers: ${newLayers.join(", ")}`));
+      console.log(chalk.green(`Enabled layers: ${newLayers.join(", ")}`));
     }
 
     // Output format
@@ -185,7 +183,7 @@ async function interactiveConfig() {
 
     if (formatAnswer.trim()) {
       config.output.format = formatAnswer.trim();
-      console.log(chalk.green(`✅ Output format: ${config.output.format}`));
+      console.log(chalk.green(`Output format: ${config.output.format}`));
     }
 
     // API URL
@@ -195,15 +193,15 @@ async function interactiveConfig() {
 
     if (apiAnswer.trim()) {
       config.api.url = apiAnswer.trim();
-      console.log(chalk.green(`✅ API URL: ${config.api.url}`));
+      console.log(chalk.green(`API URL: ${config.api.url}`));
     }
 
     // Save configuration
     ConfigManager.saveConfig(config);
     console.log();
-    console.log(chalk.green("✅ Configuration saved successfully!"));
+    console.log(chalk.green("Configuration saved successfully!"));
   } catch (error) {
-    console.log(chalk.red(`❌ Configuration error: ${error.message}`));
+    console.log(chalk.red(`Configuration error: ${error.message}`));
   }
 
   rl.close();

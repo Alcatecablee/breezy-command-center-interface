@@ -125,12 +125,12 @@ function displayUserInfo(user) {
     console.log();
     console.log(chalk.yellow("🎯 Available Features:"));
     user.features.forEach((feature) => {
-      console.log(`   ✅ ${feature}`);
+      console.log(`   ${feature}`);
     });
   }
 
   console.log();
-  console.log(chalk.green("✅ You can now use advanced NeuroLint features!"));
+  console.log(chalk.green("You can now use advanced NeuroLint features!"));
 }
 
 function getAuthData() {

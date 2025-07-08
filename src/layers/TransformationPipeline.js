@@ -59,7 +59,7 @@ class TransformationPipeline {
         this.currentIndex = this.states.length - 1;
 
         if (options.verbose) {
-          console.log(`✅ Layer ${layerId} completed successfully`);
+          console.log(`Layer ${layerId} completed successfully`);
         }
       } catch (error) {
         // Record failed state (keep previous code)
@@ -75,7 +75,7 @@ class TransformationPipeline {
           hash: this.hashCode(previous),
         });
 
-        console.error(`❌ Layer ${layerId} failed: ${error.message}`);
+        console.error(`Layer ${layerId} failed: ${error.message}`);
 
         // Continue with previous code
         current = previous;
