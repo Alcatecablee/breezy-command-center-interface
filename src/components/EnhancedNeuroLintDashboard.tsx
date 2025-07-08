@@ -308,7 +308,8 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
   };
 
   const handleQuickAnalysis = () => {
-    if (!canRunAnalysis()) {
+    // In demo mode, always allow analysis
+    if (user && !canRunAnalysis()) {
       setShowBilling(true);
       return;
     }
