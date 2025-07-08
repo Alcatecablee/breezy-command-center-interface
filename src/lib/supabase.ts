@@ -167,6 +167,8 @@ export const getUserProfile = async (userId: string) => {
 };
 
 export const getProjects = async (userId: string) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase
     .from("projects")
     .select("*")
@@ -177,6 +179,8 @@ export const getProjects = async (userId: string) => {
 };
 
 export const getAnalysisResults = async (userId: string, limit = 10) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase
     .from("analysis_results")
     .select("*")
@@ -190,6 +194,8 @@ export const getAnalysisResults = async (userId: string, limit = 10) => {
 export const createAnalysisResult = async (
   result: Omit<AnalysisResult, "id" | "created_at">,
 ) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase
     .from("analysis_results")
     .insert([result])
@@ -200,6 +206,8 @@ export const createAnalysisResult = async (
 };
 
 export const getSubscription = async (userId: string) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase
     .from("subscriptions")
     .select("*")
