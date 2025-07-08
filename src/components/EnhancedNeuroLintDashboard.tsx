@@ -319,21 +319,16 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
 
   // Check subscription limits
   const canRunAnalysis = () => {
-    // In demo mode (no user), always allow analysis
-    if (!user) return true;
+    if (!user) return false;
 
-    if (!subscription) return false; // Free tier or no subscription
-    return subscription.status === "active";
+    // For now, allow all authenticated users to run analysis
+    // In production, you can enforce subscription limits here
+    return true;
   };
 
   const getSubscriptionMessage = () => {
-    // In demo mode, show demo message
-    if (!user) {
-      return "Demo mode - Full functionality available";
-    }
-
     if (!subscription) {
-      return "Upgrade to Professional to run unlimited analyses";
+      return "Free tier - Limited analyses available";
     }
     if (subscription.status !== "active") {
       return "Please update your payment method to continue using NeuroLint";
