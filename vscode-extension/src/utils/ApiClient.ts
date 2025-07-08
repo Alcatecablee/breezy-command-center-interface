@@ -1,225 +1,191 @@
-import axios, { AxiosInstance, AxiosResponse } from "axios";
-import * as vscode from "vscode";
-import { ConfigurationManager } from "./ConfigurationManager";
 
-export interface AnalysisRequest {
-  code: string;
-  filePath: string;
-  layers: number[];
+import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
+
+export interface Issue {
+  line: number;
+  column: number;
+  endLine?: number;
+  endColumn?: number;
+  message: string;
+  severity: "error" | "warning" | "info";
+  rule: string;
+  layer: number;
+  file?: string;
+  length?: number;
 }
 
 export interface AnalysisResult {
   success: boolean;
   issues: Issue[];
-  fixes: Fix[];
-  summary: AnalysisSummary;
+  suggestions?: string[];
+  metadata?: {
+    executionTime: number;
+    layersAnalyzed: number[];
+  };
 }
 
-export interface Issue {
-  line: number;
-  column: number;
-  severity: "error" | "warning" | "info";
-  message: string;
-  rule: string;
-  layer: number;
+export interface OrchestrationRequest {
+  code: string;
+  filePath: string;
+  layers: number[];
+  options?: {
+    verbose?: boolean;
+    dryRun?: boolean;
+  };
 }
 
-export interface Fix {
-  line: number;
-  column: number;
-  newText: string;
-  description: string;
+export interface LayerSuggestionRequest {
+  code: string;
+  filePath: string;
 }
 
-export interface AnalysisSummary {
-  totalIssues: number;
-  fixableIssues: number;
-  layersUsed: number[];
-  executionTime: number;
+export interface LayerSuggestionResult {
+  success: boolean;
+  recommendations?: {
+    recommended: number[];
+    reasons: string[];
+    confidence: number;
+  };
 }
 
 export class ApiClient {
   private client: AxiosInstance;
-  private retryCount = 3;
-  private retryDelay = 1000;
+  private isConnected = false;
+  private lastConnectionCheck = 0;
+  private readonly CONNECTION_CHECK_INTERVAL = 30000; // 30 seconds
 
-  constructor(private configManager: ConfigurationManager) {
-    this.client = this.createClient();
-    this.setupInterceptors();
-  }
-
-  private createClient(): AxiosInstance {
-    const config = vscode.workspace.getConfiguration("neurolint");
-
-    return axios.create({
-      baseURL: config.get<string>("apiUrl", "http://localhost:5000"),
-      timeout: config.get<number>("timeout", 30000),
+  constructor(private baseURL: string, private apiKey?: string) {
+    this.client = axios.create({
+      baseURL: this.baseURL,
+      timeout: 30000,
       headers: {
-        "Content-Type": "application/json",
-        "User-Agent": "NeuroLint-VSCode/1.0.0",
-      },
+        'Content-Type': 'application/json',
+        ...(this.apiKey && { 'Authorization': `Bearer ${this.apiKey}` })
+      }
     });
+
+    this.setupInterceptors();
   }
 
   private setupInterceptors(): void {
-    // Request interceptor for auth
+    // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
-        const apiKey = vscode.workspace
-          .getConfiguration("neurolint")
-          .get<string>("apiKey");
-        if (apiKey) {
-          config.headers.Authorization = `Bearer ${apiKey}`;
-        }
+        console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
         return config;
       },
-      (error) => Promise.reject(error),
-    );
-
-    // Response interceptor for error handling
-    this.client.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        if (error.response?.status === 401) {
-          vscode.window.showErrorMessage(
-            "Authentication failed. Please check your API key.",
-          );
-          await this.configManager.showLoginDialog();
-        } else if (error.response?.status === 429) {
-          vscode.window.showWarningMessage(
-            "Rate limit exceeded. Please try again later.",
-          );
-        } else if (error.code === "ECONNREFUSED") {
-          vscode.window.showErrorMessage(
-            "Cannot connect to NeuroLint API. Please check the server URL.",
-          );
-        }
+      (error) => {
+        console.error('API Request Error:', error);
         return Promise.reject(error);
+      }
+    );
+
+    // Response interceptor
+    this.client.interceptors.response.use(
+      (response) => {
+        this.isConnected = true;
+        return response;
       },
+      (error) => {
+        this.isConnected = false;
+        console.error('API Response Error:', error.message);
+        
+        if (error.code === 'ECONNREFUSED') {
+          throw new Error('Cannot connect to NeuroLint server. Please ensure the server is running.');
+        }
+        
+        if (error.response?.status === 401) {
+          throw new Error('Authentication failed. Please check your API key.');
+        }
+        
+        throw error;
+      }
     );
   }
 
-  async testConnection(): Promise<boolean> {
+  async checkConnection(): Promise<boolean> {
+    const now = Date.now();
+    
+    // Rate limit connection checks
+    if (now - this.lastConnectionCheck < this.CONNECTION_CHECK_INTERVAL) {
+      return this.isConnected;
+    }
+
     try {
-      const response = await this.client.get("/health");
-      return response.status === 200;
+      await this.client.get('/health');
+      this.isConnected = true;
+      this.lastConnectionCheck = now;
+      return true;
     } catch (error) {
-      throw new Error(`Connection test failed: ${error}`);
+      this.isConnected = false;
+      this.lastConnectionCheck = now;
+      return false;
     }
   }
 
-  async analyzeCode(request: AnalysisRequest): Promise<AnalysisResult> {
-    return this.withRetry(async () => {
-      const response: AxiosResponse<AnalysisResult> = await this.client.post(
-        "/analyze",
-        request,
-      );
+  async analyzeCode(request: {
+    code: string;
+    filePath: string;
+    layers: number[];
+  }): Promise<AnalysisResult> {
+    try {
+      const response = await this.client.post('/analyze', request);
       return response.data;
-    });
-  }
-
-  async fixCode(request: AnalysisRequest): Promise<AnalysisResult> {
-    return this.withRetry(async () => {
-      const response: AxiosResponse<AnalysisResult> = await this.client.post(
-        "/fix",
-        request,
-      );
-      return response.data;
-    });
-  }
-
-  async analyzeWorkspace(
-    files: string[],
-    layers: number[],
-  ): Promise<AnalysisResult> {
-    return this.withRetry(async () => {
-      const response: AxiosResponse<AnalysisResult> = await this.client.post(
-        "/analyze/workspace",
-        {
-          files,
-          layers,
-        },
-      );
-      return response.data;
-    });
-  }
-
-  async getAnalysisHistory(limit: number = 10): Promise<any[]> {
-    return this.withRetry(async () => {
-      const response = await this.client.get(`/history?limit=${limit}`);
-      return response.data.history || [];
-    });
-  }
-
-  async getUserInfo(): Promise<any> {
-    return this.withRetry(async () => {
-      const response = await this.client.get("/user");
-      return response.data;
-    });
-  }
-
-  // Enterprise methods
-  async getTeamInfo(): Promise<any> {
-    return this.withRetry(async () => {
-      const response = await this.client.get("/enterprise/team");
-      return response.data;
-    });
-  }
-
-  async getAnalytics(timeRange: string = "30d"): Promise<any> {
-    return this.withRetry(async () => {
-      const response = await this.client.get(
-        `/enterprise/analytics?range=${timeRange}`,
-      );
-      return response.data;
-    });
-  }
-
-  async getComplianceReport(): Promise<any> {
-    return this.withRetry(async () => {
-      const response = await this.client.get("/enterprise/compliance");
-      return response.data;
-    });
-  }
-
-  async getAuditLog(page: number = 1, limit: number = 50): Promise<any> {
-    return this.withRetry(async () => {
-      const response = await this.client.get(
-        `/enterprise/audit?page=${page}&limit=${limit}`,
-      );
-      return response.data;
-    });
-  }
-
-  private async withRetry<T>(operation: () => Promise<T>): Promise<T> {
-    let lastError: any;
-
-    for (let attempt = 1; attempt <= this.retryCount; attempt++) {
-      try {
-        return await operation();
-      } catch (error) {
-        lastError = error;
-
-        if (attempt === this.retryCount) {
-          break;
-        }
-
-        // Don't retry on certain errors
-        if (error.response?.status === 401 || error.response?.status === 403) {
-          break;
-        }
-
-        // Exponential backoff
-        const delay = this.retryDelay * Math.pow(2, attempt - 1);
-        await new Promise((resolve) => setTimeout(resolve, delay));
-      }
+    } catch (error) {
+      console.error('Analysis failed:', error);
+      throw new Error(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-
-    throw lastError;
   }
 
-  updateConfiguration(): void {
-    this.client = this.createClient();
-    this.setupInterceptors();
+  async executeOrchestration(request: OrchestrationRequest): Promise<any> {
+    try {
+      const response = await this.client.post('/orchestrate', request);
+      return response.data;
+    } catch (error) {
+      console.error('Orchestration failed:', error);
+      throw new Error(`Orchestration failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async suggestLayers(request: LayerSuggestionRequest): Promise<LayerSuggestionResult> {
+    try {
+      const response = await this.client.post('/suggest-layers', request);
+      return response.data;
+    } catch (error) {
+      console.error('Layer suggestion failed:', error);
+      throw new Error(`Layer suggestion failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async fixCode(request: {
+    code: string;
+    filePath: string;
+    layers: number[];
+    dryRun?: boolean;
+  }): Promise<any> {
+    try {
+      const response = await this.client.post('/fix', request);
+      return response.data;
+    } catch (error) {
+      console.error('Fix failed:', error);
+      throw new Error(`Fix failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  updateConfig(baseURL: string, apiKey?: string): void {
+    this.baseURL = baseURL;
+    this.apiKey = apiKey;
+    
+    this.client.defaults.baseURL = baseURL;
+    this.client.defaults.headers.common['Authorization'] = 
+      apiKey ? `Bearer ${apiKey}` : undefined;
+    
+    // Reset connection status
+    this.isConnected = false;
+    this.lastConnectionCheck = 0;
+  }
+
+  getConnectionStatus(): boolean {
+    return this.isConnected;
   }
 }

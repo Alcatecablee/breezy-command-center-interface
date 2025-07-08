@@ -1,135 +1,75 @@
+
 import * as vscode from "vscode";
 
-export type StatusBarState =
-  | "ready"
-  | "analyzing"
-  | "fixing"
-  | "error"
-  | "offline";
-
-export class StatusBar implements vscode.Disposable {
+export class StatusBar {
   private statusBarItem: vscode.StatusBarItem;
-  private currentState: StatusBarState = "ready";
-  private hideTimer: NodeJS.Timeout | undefined;
+  private connectionItem: vscode.StatusBarItem;
+  private hideTimer?: NodeJS.Timeout;
 
   constructor() {
+    // Main status bar item
     this.statusBarItem = vscode.window.createStatusBarItem(
       vscode.StatusBarAlignment.Right,
-      100,
+      100
     );
-
     this.statusBarItem.command = "neurolint.showOutput";
-    this.statusBarItem.tooltip = "Click to show NeuroLint output";
-    this.statusBarItem.show();
-
-    this.updateStatus("ready", "NeuroLint ready");
+    
+    // Connection status item
+    this.connectionItem = vscode.window.createStatusBarItem(
+      vscode.StatusBarAlignment.Right,
+      99
+    );
+    this.connectionItem.command = "neurolint.configure";
+    
+    this.show("Ready");
+    this.updateConnectionStatus(false); // Start as disconnected
   }
 
-  updateStatus(
-    state: StatusBarState,
-    message?: string,
-    autoHide?: boolean,
-  ): void {
-    this.currentState = state;
-
-    const config = this.getStatusConfig(state);
-    this.statusBarItem.text = `$(${config.icon}) ${message || config.defaultMessage}`;
-    this.statusBarItem.color = config.color;
-    this.statusBarItem.backgroundColor = config.backgroundColor;
-
-    // Clear any existing timer
+  show(text: string, spinning = false, isError = false): void {
+    // Clear any existing hide timer
     if (this.hideTimer) {
       clearTimeout(this.hideTimer);
       this.hideTimer = undefined;
     }
 
-    // Auto-hide temporary messages
-    if (autoHide && state !== "error") {
+    const icon = spinning 
+      ? "$(sync~spin)"
+      : isError 
+        ? "$(error)"
+        : "$(gear)";
+
+    this.statusBarItem.text = `${icon} NeuroLint: ${text}`;
+    this.statusBarItem.backgroundColor = isError 
+      ? new vscode.ThemeColor("statusBarItem.errorBackground")
+      : undefined;
+    
+    this.statusBarItem.show();
+
+    // Auto-hide temporary messages after 5 seconds
+    if (spinning || isError || text.includes("complete")) {
       this.hideTimer = setTimeout(() => {
-        this.updateStatus("ready", "NeuroLint ready");
-      }, 3000);
+        this.show("Ready");
+      }, 5000);
     }
   }
 
-  showProgress(message: string, increment?: number): void {
-    if (increment !== undefined) {
-      const progressText = `${message} (${increment}%)`;
-      this.updateStatus("analyzing", progressText);
-    } else {
-      this.updateStatus("analyzing", message);
-    }
+  updateConnectionStatus(connected: boolean): void {
+    const icon = connected ? "$(check)" : "$(x)";
+    const text = connected ? "Connected" : "Disconnected";
+    const color = connected ? undefined : new vscode.ThemeColor("statusBarItem.warningBackground");
+
+    this.connectionItem.text = `${icon} ${text}`;
+    this.connectionItem.backgroundColor = color;
+    this.connectionItem.tooltip = connected 
+      ? "Connected to NeuroLint server" 
+      : "Not connected to NeuroLint server. Click to configure.";
+    
+    this.connectionItem.show();
   }
 
-  showSuccess(message: string): void {
-    this.updateStatus("ready", message, true);
-  }
-
-  showError(message: string): void {
-    this.updateStatus("error", message);
-  }
-
-  showOffline(): void {
-    this.updateStatus("offline", "NeuroLint offline");
-  }
-
-  private getStatusConfig(state: StatusBarState): {
-    icon: string;
-    defaultMessage: string;
-    color?: vscode.ThemeColor;
-    backgroundColor?: vscode.ThemeColor;
-  } {
-    switch (state) {
-      case "ready":
-        return {
-          icon: "check",
-          defaultMessage: "NeuroLint ready",
-          color: new vscode.ThemeColor("statusBarItem.foreground"),
-        };
-
-      case "analyzing":
-        return {
-          icon: "sync~spin",
-          defaultMessage: "NeuroLint analyzing...",
-          color: new vscode.ThemeColor("statusBarItem.foreground"),
-        };
-
-      case "fixing":
-        return {
-          icon: "tools",
-          defaultMessage: "NeuroLint fixing...",
-          color: new vscode.ThemeColor("statusBarItem.foreground"),
-        };
-
-      case "error":
-        return {
-          icon: "error",
-          defaultMessage: "NeuroLint error",
-          color: new vscode.ThemeColor("statusBarItem.errorForeground"),
-          backgroundColor: new vscode.ThemeColor(
-            "statusBarItem.errorBackground",
-          ),
-        };
-
-      case "offline":
-        return {
-          icon: "cloud-offline",
-          defaultMessage: "NeuroLint offline",
-          color: new vscode.ThemeColor("statusBarItem.warningForeground"),
-          backgroundColor: new vscode.ThemeColor(
-            "statusBarItem.warningBackground",
-          ),
-        };
-
-      default:
-        return {
-          icon: "question",
-          defaultMessage: "NeuroLint unknown",
-        };
-    }
-  }
-
-  getCurrentState(): StatusBarState {
-    return this.currentState;
+  hide(): void {
+    this.statusBarItem.hide();
+    this.connectionItem.hide();
   }
 
   dispose(): void {
@@ -137,5 +77,6 @@ export class StatusBar implements vscode.Disposable {
       clearTimeout(this.hideTimer);
     }
     this.statusBarItem.dispose();
+    this.connectionItem.dispose();
   }
 }
