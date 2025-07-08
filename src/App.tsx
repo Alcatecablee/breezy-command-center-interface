@@ -1,10 +1,17 @@
 import React from "react";
 import { AuthProvider, useAuth } from "./lib/auth-context";
 import { LoginForm } from "./components/AuthComponents";
+import { ConfigurationNotice } from "./components/ConfigurationNotice";
 import EnhancedNeuroLintDashboard from "./components/EnhancedNeuroLintDashboard";
+import { isSupabaseConfigured } from "./lib/supabase";
 
 function AppContent() {
   const { user, loading } = useAuth();
+
+  // Show configuration notice if Supabase is not set up
+  if (!isSupabaseConfigured) {
+    return <ConfigurationNotice />;
+  }
 
   if (loading) {
     return (
