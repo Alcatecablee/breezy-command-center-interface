@@ -44,45 +44,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const loadUserData = async (currentUser: User) => {
     try {
-      // Check database setup first (with timeout)
-      const dbCheckPromise = checkDatabaseSetup();
-      const timeoutPromise = new Promise((resolve) =>
-        setTimeout(
-          () =>
-            resolve({ isSetup: false, missingTables: [], error: "timeout" }),
-          3000,
-        ),
-      );
+      // Skip database checks for now to avoid hanging
+      console.log("User authenticated:", currentUser.email);
 
-      const dbStatus = (await Promise.race([
-        dbCheckPromise,
-        timeoutPromise,
-      ])) as any;
-
-      if (!dbStatus.isSetup) {
-        console.warn(
-          "Database not fully set up:",
-          dbStatus.missingTables?.length > 0
-            ? dbStatus.missingTables
-            : "Cannot connect to database",
-        );
-        // Don't try to load user data if database isn't set up
-        return;
+      // Try to load user profile, but don't block if it fails
+      try {
+        const { data: profileData } = await getUserProfile(currentUser.id);
+        setProfile(profileData);
+      } catch (error) {
+        console.warn("Could not load user profile:", error);
+        // Create a minimal profile
+        setProfile({
+          id: currentUser.id,
+          user_id: currentUser.id,
+          company: "Your Company",
+          country: "United States",
+          timezone: "UTC",
+          preferences: {
+            default_layers: [1, 2, 3, 4],
+            email_notifications: true,
+            analysis_history_retention: 90,
+          },
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
       }
 
-      // Initialize user profile if needed
-      await initializeUserProfile(currentUser.id, currentUser.email || "");
-
-      // Load user profile
-      const { data: profileData } = await getUserProfile(currentUser.id);
-      setProfile(profileData);
-
-      // Load subscription
-      const { data: subscriptionData } = await getSubscription(currentUser.id);
-      setSubscription(subscriptionData);
+      // Try to load subscription, but don't block if it fails
+      try {
+        const { data: subscriptionData } = await getSubscription(
+          currentUser.id,
+        );
+        setSubscription(subscriptionData);
+      } catch (error) {
+        console.warn("Could not load subscription:", error);
+        setSubscription(null);
+      }
     } catch (error) {
       console.error("Error loading user data:", error);
-      // Don't block the app if user data loading fails
     }
   };
 
