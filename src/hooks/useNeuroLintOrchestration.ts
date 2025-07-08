@@ -73,23 +73,41 @@ export function useNeuroLintOrchestration(): UseNeuroLintOrchestrationState &
   useEffect(() => {
     const initializeOrchestrator = async () => {
       try {
-        // Get layer information
+        // Get layer information (this is local, should always work)
         const layers = webLayerOrchestrator.getLayerInfo();
 
-        // Check server status
-        const serverStatus = await webLayerOrchestrator.getServerStatus();
-
+        // Update state with layers first
         setState((prev) => ({
           ...prev,
           layers,
-          serverOnline: serverStatus.online,
-          serverVersion: serverStatus.version,
         }));
 
-        console.log("🔧 NeuroLint Orchestration initialized", {
-          layers: layers.length,
-          serverOnline: serverStatus.online,
-        });
+        // Check server status in background (don't block initialization)
+        webLayerOrchestrator
+          .getServerStatus()
+          .then((serverStatus) => {
+            setState((prev) => ({
+              ...prev,
+              serverOnline: serverStatus.online,
+              serverVersion: serverStatus.version,
+            }));
+
+            console.log("🔧 NeuroLint Orchestration initialized", {
+              layers: layers.length,
+              serverOnline: serverStatus.online,
+            });
+          })
+          .catch((error) => {
+            console.warn("Server status check failed:", error);
+            setState((prev) => ({
+              ...prev,
+              serverOnline: false,
+              warnings: [
+                ...prev.warnings,
+                "API server is not available - using client-side mode",
+              ],
+            }));
+          });
       } catch (error) {
         setState((prev) => ({
           ...prev,
