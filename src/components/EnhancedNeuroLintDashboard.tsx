@@ -280,7 +280,10 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
                     />
                   </PayPalScriptProvider>
                 </div>
-              ))}
+              )}
+            )}
+          </div>
+        )}
             </div>
           </div>
         )}
