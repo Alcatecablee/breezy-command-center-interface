@@ -160,8 +160,8 @@ class VSCodeBridge {
 
   async handleStatusRequest(ws, data) {
     try {
-      const { statusCommand } = require("../commands/status");
-      const { ConfigManager } = require("../utils/ConfigManager");
+      const { statusCommand } = await import("../commands/status.js");
+      const { ConfigManager } = await import("../utils/ConfigManager.js");
 
       const config = ConfigManager.getConfig();
       const status = {
