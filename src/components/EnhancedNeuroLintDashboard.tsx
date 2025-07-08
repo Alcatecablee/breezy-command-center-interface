@@ -270,6 +270,13 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
     setUserCurrency(detectedCurrency);
   }, [user]);
 
+  // Update results when new analysis completes
+  useEffect(() => {
+    if (lastResult && lastResult.success) {
+      loadAnalysisResults();
+    }
+  }, [lastResult]);
+
   const loadAnalysisResults = async () => {
     if (!user) return;
 
@@ -279,55 +286,35 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
     }
   };
 
-  const handleAnalyze = async () => {
+  const handleCodeAnalysis = async (code: string, selectedLayers: number[]) => {
     if (!user) return;
 
-    setIsAnalyzing(true);
-    setProgress(0);
-    setCurrentLayer(null);
+    try {
+      // First analyze the code to get recommendations
+      await analyzeCode(code);
 
-    // Track usage for billing
-    await trackUsage(user.id, "analysis_started");
-
-    // Simulate layer-by-layer analysis
-    for (let i = 1; i <= 6; i++) {
-      setCurrentLayer(i);
-      setProgress(i * 16.67);
-      await new Promise((resolve) => setTimeout(resolve, 600));
-    }
-
-    // Create real analysis result
-    const newResult: Omit<AnalysisResult, "id" | "created_at"> = {
-      user_id: user.id,
-      files_analyzed: Math.floor(Math.random() * 200) + 50,
-      issues_found: Math.floor(Math.random() * 50) + 10,
-      issues_fixed: Math.floor(Math.random() * 40) + 8,
-      layers_used: [1, 2, 3, 4, 5, 6],
-      improvements: [
-        "Fixed HTML entity encoding issues",
-        "Added missing React key properties",
-        "Implemented SSR safety guards",
-        "Upgraded TypeScript configuration",
-        "Optimized Next.js App Router usage",
-        "Enhanced error boundary coverage",
-      ],
-      execution_time: Math.floor(Math.random() * 3000) + 1000,
-      cache_hit_rate: Math.floor(Math.random() * 30) + 70,
-    };
-
-    const { data: savedResult } = await createAnalysisResult(newResult);
-
-    if (savedResult) {
-      setResults((prev) => [savedResult, ...prev.slice(0, 4)]);
-      await trackUsage(user.id, "analysis_completed", {
-        execution_time: savedResult.execution_time,
-        issues_fixed: savedResult.issues_fixed,
+      // Then execute the selected layers
+      const result = await executeAnalysis(code, selectedLayers, {
+        dryRun: false,
+        useCache: true,
+        skipUnnecessary: true,
       });
-    }
 
-    setIsAnalyzing(false);
-    setCurrentLayer(null);
-    setProgress(100);
+      if (result && result.success) {
+        setShowCodeInput(false);
+        console.log("✅ Analysis completed successfully");
+      }
+    } catch (error) {
+      console.error("Analysis failed:", error);
+    }
+  };
+
+  const handleQuickAnalysis = () => {
+    if (!canRunAnalysis()) {
+      setShowBilling(true);
+      return;
+    }
+    setShowCodeInput(true);
   };
 
   // Check subscription limits
