@@ -5,24 +5,28 @@
  * Advanced rule-based code analysis and transformation tool
  */
 
-const { Command } = require("commander");
-const chalk = require("chalk");
-const boxen = require("boxen");
-const { ErrorHandler } = require("./utils/ErrorHandler");
-const { PluginManager } = require("./plugins/PluginManager");
-const { VSCodeBridge } = require("./integration/VSCodeBridge");
+import { Command } from "commander";
+import chalk from "chalk";
+import boxen from "boxen";
+import { ErrorHandler } from "./utils/ErrorHandler.js";
+import { PluginManager } from "./plugins/PluginManager.js";
+import { VSCodeBridge } from "./integration/VSCodeBridge.js";
 
 // Import commands
-const { analyzeCommand } = require("./commands/analyze");
-const { fixCommand } = require("./commands/fix");
-const { initCommand } = require("./commands/init");
-const { statusCommand } = require("./commands/status");
-const { loginCommand } = require("./commands/auth");
-const { configCommand } = require("./commands/config");
-const { interactiveCommand } = require("./commands/interactive");
+import { analyzeCommand } from "./commands/analyze.js";
+import { fixCommand } from "./commands/fix.js";
+import { initCommand } from "./commands/init.js";
+import { statusCommand } from "./commands/status.js";
+import { loginCommand } from "./commands/auth.js";
+import { configCommand } from "./commands/config.js";
+import { interactiveCommand } from "./commands/interactive.js";
+
+// Import package.json
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const packageJson = require("../package.json");
 
 const program = new Command();
-const packageJson = require("../package.json");
 
 // Initialize global components
 const errorHandler = new ErrorHandler();
@@ -52,13 +56,17 @@ program
   .command("init")
   .description("Initialize NeuroLint in your project")
   .option("-f, --force", "overwrite existing configuration")
-  .option("--layers <layers>", "comma-separated list of layers to enable", "1,2,3,4")
+  .option(
+    "--layers <layers>",
+    "comma-separated list of layers to enable",
+    "1,2,3,4",
+  )
   .action(async (options) => {
-    errorHandler.pushContext('init');
+    errorHandler.pushContext("init");
     try {
       await initCommand(options);
     } catch (error) {
-      errorHandler.handleError(error, 'init', options);
+      errorHandler.handleError(error, "init", options);
       process.exit(1);
     } finally {
       errorHandler.popContext();
@@ -71,21 +79,37 @@ program
   .description("Analyze code using NeuroLint layers")
   .argument("[path]", "path to analyze", ".")
   .option("-r, --recursive", "analyze recursively")
-  .option("-l, --layers <layers>", "comma-separated layers to use", "1,2,3,4,5,6")
-  .option("-o, --output <format>", "output format (table|json|summary)", "table")
-  .option("-i, --include <pattern>", "include file pattern", "**/*.{ts,tsx,js,jsx}")
-  .option("-e, --exclude <pattern>", "exclude file pattern", "node_modules/**,dist/**,build/**")
+  .option(
+    "-l, --layers <layers>",
+    "comma-separated layers to use",
+    "1,2,3,4,5,6",
+  )
+  .option(
+    "-o, --output <format>",
+    "output format (table|json|summary)",
+    "table",
+  )
+  .option(
+    "-i, --include <pattern>",
+    "include file pattern",
+    "**/*.{ts,tsx,js,jsx}",
+  )
+  .option(
+    "-e, --exclude <pattern>",
+    "exclude file pattern",
+    "node_modules/**,dist/**,build/**",
+  )
   .action(async (path, options) => {
-    errorHandler.pushContext('analyze');
+    errorHandler.pushContext("analyze");
     try {
       // Load plugins if requested
       if (program.opts().plugins) {
         await pluginManager.loadPlugins();
       }
-      
+
       await analyzeCommand(path, { ...options, ...program.opts() });
     } catch (error) {
-      errorHandler.handleError(error, 'analyze', options);
+      errorHandler.handleError(error, "analyze", options);
       process.exit(1);
     } finally {
       errorHandler.popContext();
@@ -98,18 +122,22 @@ program
   .argument("[path]", "path to fix", ".")
   .option("--dry-run", "preview changes without applying them")
   .option("--backup", "create backup files before fixing")
-  .option("-l, --layers <layers>", "comma-separated layers to use", "1,2,3,4,5,6")
+  .option(
+    "-l, --layers <layers>",
+    "comma-separated layers to use",
+    "1,2,3,4,5,6",
+  )
   .option("-r, --recursive", "fix recursively")
   .action(async (path, options) => {
-    errorHandler.pushContext('fix');
+    errorHandler.pushContext("fix");
     try {
       if (program.opts().plugins) {
         await pluginManager.loadPlugins();
       }
-      
+
       await fixCommand(path, { ...options, ...program.opts() });
     } catch (error) {
-      errorHandler.handleError(error, 'fix', options);
+      errorHandler.handleError(error, "fix", options);
       process.exit(1);
     } finally {
       errorHandler.popContext();
@@ -161,11 +189,11 @@ program
   .action(async (options) => {
     try {
       await pluginManager.loadPlugins();
-      
+
       if (options.list) {
         const plugins = pluginManager.getPluginInfo();
         console.log(chalk.blue("Installed Plugins:"));
-        plugins.forEach(plugin => {
+        plugins.forEach((plugin) => {
           console.log(`  ${chalk.white(plugin.name)} v${plugin.version}`);
           console.log(`    ${chalk.gray(plugin.description)}`);
         });
@@ -175,7 +203,7 @@ program
         pluginManager.unloadPlugin(options.uninstall);
       }
     } catch (error) {
-      errorHandler.handleError(error, 'plugins', options);
+      errorHandler.handleError(error, "plugins", options);
     }
   });
 
@@ -189,21 +217,23 @@ program
     try {
       if (options.startBridge) {
         await vscodeBackground.start();
-        console.log(chalk.green("VS Code bridge started. Keep this terminal open."));
-        
+        console.log(
+          chalk.green("VS Code bridge started. Keep this terminal open."),
+        );
+
         // Keep process alive
-        process.on('SIGINT', () => {
+        process.on("SIGINT", () => {
           vscodeBackground.stop();
           process.exit(0);
         });
-        
+
         // Prevent exit
         setInterval(() => {}, 1000);
       } else if (options.stopBridge) {
         vscodeBackground.stop();
       }
     } catch (error) {
-      errorHandler.handleError(error, 'vscode', options);
+      errorHandler.handleError(error, "vscode", options);
     }
   });
 
@@ -217,7 +247,7 @@ async function initialize() {
     if (program.opts().vscodeBridge) {
       await vscodeBackground.start();
     }
-    
+
     // Load plugins if requested
     if (program.opts().plugins) {
       await pluginManager.loadPlugins();
@@ -237,7 +267,7 @@ async function initialize() {
       process.exit(0);
     }
 
-    errorHandler.handleError(err, 'main');
+    errorHandler.handleError(err, "main");
 
     if (program.opts().debug) {
       console.error(chalk.gray(err.stack));
@@ -292,13 +322,13 @@ function displayWelcome() {
 }
 
 // Graceful shutdown
-process.on('SIGINT', () => {
-  console.log(chalk.yellow('\nShutting down gracefully...'));
+process.on("SIGINT", () => {
+  console.log(chalk.yellow("\nShutting down gracefully..."));
   vscodeBackground.stop();
   process.exit(0);
 });
 
-process.on('SIGTERM', () => {
+process.on("SIGTERM", () => {
   vscodeBackground.stop();
   process.exit(0);
 });
