@@ -25,6 +25,10 @@ export const supabase = isSupabaseConfigured
 // Add connection test function
 export const testSupabaseConnection = async () => {
   try {
+    if (!supabase) {
+      console.error("Supabase not configured");
+      return false;
+    }
     const { data, error } = await supabase.auth.getSession();
     if (error) {
       console.error("Supabase connection test failed:", error);
