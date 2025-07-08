@@ -5,6 +5,7 @@ import {
   getCurrentUser,
   getUserProfile,
   getSubscription,
+  isSupabaseConfigured,
 } from "./supabase";
 import type { UserProfile, Subscription } from "./supabase";
 
@@ -52,15 +53,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   useEffect(() => {
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured) {
+      console.warn("Supabase not configured - running in demo mode");
+      setLoading(false);
+      return;
+    }
+
     // Check active sessions and sets the user
     const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        setUser(session?.user ?? null);
 
-      if (session?.user) {
-        await loadUserData(session.user);
+        if (session?.user) {
+          await loadUserData(session.user);
+        }
+      } catch (error) {
+        console.error("Error getting session:", error);
       }
 
       setLoading(false);
@@ -69,22 +81,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     getSession();
 
     // Listen for changes on auth state (sign in, sign out, etc.)
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null);
+    let authSubscription: any = null;
 
-      if (session?.user) {
-        await loadUserData(session.user);
-      } else {
-        setProfile(null);
-        setSubscription(null);
+    if (isSupabaseConfigured) {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        try {
+          setUser(session?.user ?? null);
+
+          if (session?.user) {
+            await loadUserData(session.user);
+          } else {
+            setProfile(null);
+            setSubscription(null);
+          }
+        } catch (error) {
+          console.error("Error in auth state change:", error);
+        }
+
+        setLoading(false);
+      });
+
+      authSubscription = subscription;
+    }
+
+    return () => {
+      if (authSubscription) {
+        authSubscription.unsubscribe();
       }
-
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
