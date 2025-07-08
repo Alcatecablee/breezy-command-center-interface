@@ -287,6 +287,8 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
   };
 
   const handleCodeAnalysis = async (code: string, selectedLayers: number[]) => {
+    if (!user) return;
+
     try {
       // First analyze the code to get recommendations
       await analyzeCode(code);
