@@ -182,7 +182,7 @@ class VSCodeBridge {
 
   async handleConfigRequest(ws, data) {
     try {
-      const { ConfigManager } = require("../utils/ConfigManager");
+      const { ConfigManager } = await import("../utils/ConfigManager.js");
 
       if (data.action === "get") {
         const config = ConfigManager.getConfig();
