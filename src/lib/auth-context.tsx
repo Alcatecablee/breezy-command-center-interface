@@ -8,6 +8,10 @@ import {
   isSupabaseConfigured,
 } from "./supabase";
 import type { UserProfile, Subscription } from "./supabase";
+import {
+  checkDatabaseSetup,
+  initializeUserProfile,
+} from "../utils/initDatabase";
 
 interface AuthContextType {
   user: User | null;
