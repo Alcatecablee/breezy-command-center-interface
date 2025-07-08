@@ -234,4 +234,4 @@ function displayNextSteps(config) {
   );
 }
 
-module.exports = { initCommand };
+export { initCommand };

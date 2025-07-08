@@ -206,7 +206,7 @@ function displayFixResults(results, options) {
     chalk.bold("│                 Fix Results                     │"),
   );
   console.log(
-    chalk.bold("├────────���────────────────────────────────────────┤"),
+    chalk.bold("├─────────────────────────────────────────────────┤"),
   );
   console.log(
     `│ Files processed: ${String(summary.filesProcessed).padEnd(30)} │`,
@@ -304,4 +304,4 @@ function getChangeType(type) {
   }
 }
 
-module.exports = { fixCommand };
+export { fixCommand };

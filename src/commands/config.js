@@ -232,4 +232,4 @@ function parseValue(value) {
   }
 }
 
-module.exports = { configCommand };
+export { configCommand };
