@@ -1,0 +1,12 @@
+{
+  "name": "code",
+  "version": "1.0.0",
+  "description": "NEUROLINT cli",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo 'Development server not configured yet'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
