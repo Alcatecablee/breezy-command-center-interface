@@ -224,6 +224,8 @@ export const trackUsage = async (
   action: string,
   metadata?: any,
 ) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase.from("usage_tracking").insert([
     {
       user_id: userId,
@@ -241,6 +243,8 @@ export const getUsageStats = async (
   startDate: string,
   endDate: string,
 ) => {
+  if (!supabase)
+    return { data: null, error: { message: "Supabase not configured" } };
   const { data, error } = await supabase
     .from("usage_tracking")
     .select("*")
