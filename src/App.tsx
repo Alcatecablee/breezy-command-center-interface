@@ -33,6 +33,7 @@ function App() {
   return (
     <AuthProvider>
       <AppContent />
+      <ConnectionStatus />
     </AuthProvider>
   );
 }
