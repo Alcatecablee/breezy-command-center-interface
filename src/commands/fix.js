@@ -39,11 +39,11 @@ async function fixCommand(targetPath, options) {
     }
 
     // Execute fixes
-    console.log(chalk.blue("🔧 Starting NeuroLint Fixes"));
+    console.log(chalk.blue("Starting NeuroLint Fixes"));
     console.log(chalk.gray("=".repeat(50)));
 
     if (options.dryRun) {
-      console.log(chalk.yellow("🔍 DRY RUN MODE - No changes will be made"));
+      console.log(chalk.yellow("DRY RUN MODE - No changes will be made"));
       console.log();
     }
 
@@ -98,7 +98,7 @@ async function createBackups(files) {
     fs.copyFileSync(file, backupPath);
   }
 
-  console.log(chalk.green(`✅ Backup created: ${backupDir}`));
+  console.log(chalk.green(`Backup created: ${backupDir}`));
 }
 
 async function executeFixes(files, layers, options) {
@@ -133,7 +133,7 @@ async function executeFixes(files, layers, options) {
       return results;
     }
   } catch (error) {
-    console.log(chalk.yellow("⚠️  API unavailable, using local fixes"));
+    console.log(chalk.yellow("API unavailable, using local fixes"));
   }
 
   // Local fixes using layer scripts
@@ -223,7 +223,7 @@ function displayFixResults(results, options) {
   }
 
   console.log(
-    chalk.bold("└─────────────────────────────────────────────────┘"),
+    chalk.bold("└���────────────────────────────────────────────────┘"),
   );
 
   if (changes.length > 0) {
@@ -239,9 +239,9 @@ function displayFixResults(results, options) {
         console.log(`📝 ${chalk.blue(file)} (${fileChanges.length} changes)`);
 
         fileChanges.slice(0, 3).forEach((change) => {
-          const icon = getChangeIcon(change.type);
+          const changeType = getChangeType(change.type);
           console.log(
-            `   ${icon} ${change.description || change.rule || change.type}`,
+            `   ${changeType} ${change.description || change.rule || change.type}`,
           );
           if (change.layer) {
             console.log(`      ${chalk.gray(`Layer ${change.layer}`)}`);
@@ -265,15 +265,13 @@ function displayFixResults(results, options) {
     }
 
     if (options.dryRun) {
-      console.log(
-        chalk.yellow("💡 Run without --dry-run to apply these changes"),
-      );
+      console.log(chalk.yellow("Run without --dry-run to apply these changes"));
     } else {
-      console.log(chalk.green("✅ All fixes have been applied successfully!"));
+      console.log(chalk.green("All fixes have been applied successfully!"));
     }
   } else {
     console.log(
-      chalk.green("\n✅ No fixes needed! Your code is already optimized."),
+      chalk.green("\nNo fixes needed! Your code is already optimized."),
     );
   }
 }
@@ -289,20 +287,20 @@ function groupChangesByFile(changes) {
   }, {});
 }
 
-function getChangeIcon(type) {
+function getChangeType(type) {
   switch (type) {
     case "fix":
-      return "🔧";
+      return "[FIX]";
     case "refactor":
-      return "♻️";
+      return "[REF]";
     case "optimize":
-      return "⚡";
+      return "[OPT]";
     case "style":
-      return "🎨";
+      return "[STY]";
     case "security":
-      return "🔒";
+      return "[SEC]";
     default:
-      return "📝";
+      return "[CHG]";
   }
 }
 
