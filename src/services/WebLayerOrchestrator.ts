@@ -879,7 +879,14 @@ class WebLayerOrchestrator {
       }
     } catch (error) {
       if (error.name === "AbortError") {
-        console.warn("Server health check timed out");
+        console.warn(
+          "Server health check timed out - API server may not be running",
+        );
+      } else if (error.message.includes("Failed to fetch")) {
+        console.warn(
+          "Cannot connect to API server - check if it's running on",
+          this.baseUrl,
+        );
       } else {
         console.warn(
           "Server not available, using client-side fallback:",
