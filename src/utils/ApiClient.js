@@ -1,5 +1,4 @@
 const axios = require("axios");
-const { getAuthData } = require("../commands/auth");
 
 class ApiClient {
   constructor(baseURL = "https://api.neurolint.dev", apiKey = null) {
@@ -10,10 +9,15 @@ class ApiClient {
 
     // Try to get auth data if no API key provided
     if (!this.apiKey) {
-      const authData = getAuthData();
-      if (authData) {
-        this.apiKey = authData.apiKey;
-        this.baseURL = authData.apiUrl || this.baseURL;
+      try {
+        const { getAuthData } = require("../commands/auth");
+        const authData = getAuthData();
+        if (authData) {
+          this.apiKey = authData.apiKey;
+          this.baseURL = authData.apiUrl || this.baseURL;
+        }
+      } catch (error) {
+        // Ignore auth errors during initialization
       }
     }
 
