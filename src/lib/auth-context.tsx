@@ -93,6 +93,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
     }
 
+    // Fallback timer to ensure loading doesn't hang forever
+    const fallbackTimer = setTimeout(() => {
+      console.warn("Auth loading taking too long, stopping loading state");
+      setLoading(false);
+      setUser(null);
+    }, 8000); // 8 second fallback
+
     // Check active sessions and sets the user
     const getSession = async () => {
       try {
@@ -101,6 +108,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           data: { session },
           error,
         } = await supabase.auth.getSession();
+
+        clearTimeout(fallbackTimer); // Clear fallback since we got a response
 
         if (error) {
           console.error("Session check error:", error);
@@ -117,6 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       } catch (error) {
         console.error("Error getting session:", error);
+        clearTimeout(fallbackTimer);
         // Don't block the app if session check fails
         setUser(null);
       }
