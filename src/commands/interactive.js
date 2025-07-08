@@ -234,4 +234,4 @@ function showHelp() {
   console.log("• Use --help with any command for more options");
 }
 
-module.exports = { interactiveCommand };
+export { interactiveCommand };

@@ -304,4 +304,4 @@ function displayStatus(status, detailed) {
   }
 }
 
-module.exports = { statusCommand };
+export { statusCommand };
