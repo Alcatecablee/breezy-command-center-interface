@@ -23,54 +23,241 @@ interface CodeInputModalProps {
   isAnalyzing: boolean;
 }
 
+// Code Input Modal Component
+const CodeInputModal: React.FC<CodeInputModalProps> = ({
+  isOpen,
+  onClose,
+  onAnalyze,
+  recommendedLayers,
+  detectedIssues,
+  isAnalyzing,
+}) => {
+  const [code, setCode] = useState("");
+  const [selectedLayers, setSelectedLayers] = useState<number[]>([]);
+  const [activeTab, setActiveTab] = useState<"input" | "analysis">("input");
+
+  useEffect(() => {
+    if (recommendedLayers.length > 0) {
+      setSelectedLayers(recommendedLayers);
+      setActiveTab("analysis");
+    }
+  }, [recommendedLayers]);
+
+  const handleLayerToggle = (layerId: number) => {
+    setSelectedLayers((prev) =>
+      prev.includes(layerId)
+        ? prev.filter((id) => id !== layerId)
+        : [...prev, layerId].sort(),
+    );
+  };
+
+  const handleAnalyze = () => {
+    if (code.trim() && selectedLayers.length > 0) {
+      onAnalyze(code, selectedLayers);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div className="flex items-center justify-between p-6 border-b border-gray-800">
+          <h3 className="text-xl font-semibold text-white">
+            NeuroLint Code Analysis
+          </h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white">
+            ✕
+          </button>
+        </div>
+
+        <div className="flex border-b border-gray-800">
+          <button
+            onClick={() => setActiveTab("input")}
+            className={`px-6 py-3 text-sm font-medium ${
+              activeTab === "input"
+                ? "text-white border-b-2 border-white"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            Code Input
+          </button>
+          <button
+            onClick={() => setActiveTab("analysis")}
+            className={`px-6 py-3 text-sm font-medium ${
+              activeTab === "analysis"
+                ? "text-white border-b-2 border-white"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            Analysis & Layers
+          </button>
+        </div>
+
+        <div className="p-6 max-h-[60vh] overflow-y-auto">
+          {activeTab === "input" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  Paste your TypeScript/React code:
+                </label>
+                <textarea
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="// Paste your code here...&#10;function MyComponent() {&#10;  return <div>Hello World</div>;&#10;}"
+                  className="w-full h-64 bg-gray-800 border border-gray-700 rounded-md p-3 text-white font-mono text-sm resize-none focus:outline-none focus:border-white"
+                />
+              </div>
+              {code && (
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setActiveTab("analysis")}
+                    className="bg-white text-black px-4 py-2 rounded-md font-medium hover:bg-gray-200"
+                  >
+                    Analyze Code →
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "analysis" && (
+            <div className="space-y-6">
+              {detectedIssues.length > 0 && (
+                <div>
+                  <h4 className="text-lg font-semibold text-white mb-3">
+                    Detected Issues
+                  </h4>
+                  <div className="space-y-2">
+                    {detectedIssues.map((issue, index) => (
+                      <div
+                        key={index}
+                        className={`p-3 rounded-md border ${
+                          issue.severity === "high"
+                            ? "bg-red-900/20 border-red-600/30 text-red-400"
+                            : issue.severity === "medium"
+                              ? "bg-yellow-900/20 border-yellow-600/30 text-yellow-400"
+                              : "bg-blue-900/20 border-blue-600/30 text-blue-400"
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-medium">
+                              {issue.description}
+                            </div>
+                            <div className="text-sm opacity-75">
+                              Fixed by Layer {issue.fixedByLayer}
+                            </div>
+                          </div>
+                          <span className="text-xs uppercase px-2 py-1 rounded bg-black/20">
+                            {issue.severity}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h4 className="text-lg font-semibold text-white mb-3">
+                  Select Layers to Execute
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {[1, 2, 3, 4, 5, 6].map((layerId) => {
+                    const layerNames = {
+                      1: "Configuration",
+                      2: "Entity Cleanup",
+                      3: "Components",
+                      4: "Hydration",
+                      5: "Next.js",
+                      6: "Testing",
+                    };
+
+                    const isRecommended = recommendedLayers.includes(layerId);
+                    const isSelected = selectedLayers.includes(layerId);
+
+                    return (
+                      <label
+                        key={layerId}
+                        className={`flex items-center p-3 rounded-md border cursor-pointer ${
+                          isSelected
+                            ? "bg-white/10 border-white"
+                            : "bg-gray-800 border-gray-700 hover:border-gray-600"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleLayerToggle(layerId)}
+                          className="mr-3"
+                        />
+                        <div>
+                          <div className="text-white font-medium">
+                            Layer {layerId}: {layerNames[layerId]}
+                          </div>
+                          {isRecommended && (
+                            <div className="text-xs text-blue-400">
+                              Recommended
+                            </div>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-t border-gray-800 flex justify-between">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-400 hover:text-white"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleAnalyze}
+            disabled={
+              !code.trim() || selectedLayers.length === 0 || isAnalyzing
+            }
+            className="bg-white text-black px-6 py-2 rounded-md font-medium hover:bg-gray-200 disabled:bg-gray-600 disabled:text-gray-400"
+          >
+            {isAnalyzing ? "Analyzing..." : "Run Analysis"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const EnhancedNeuroLintDashboard: React.FC = () => {
   const { user, profile, subscription, loading } = useAuth();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<AnalysisResult[]>([]);
-  const [currentLayer, setCurrentLayer] = useState<number | null>(null);
-  const [progress, setProgress] = useState(0);
   const [showBilling, setShowBilling] = useState(false);
+  const [showCodeInput, setShowCodeInput] = useState(false);
   const [userCurrency, setUserCurrency] =
     useState<keyof typeof currencyLocaleMap>("USD");
 
-  const layers: LayerInfo[] = [
-    {
-      id: 1,
-      name: "Configuration",
-      description: "TypeScript and build configuration optimization",
-      status: "idle",
-    },
-    {
-      id: 2,
-      name: "Entity Cleanup",
-      description: "Pattern fixes and code modernization",
-      status: "idle",
-    },
-    {
-      id: 3,
-      name: "Components",
-      description: "React and TypeScript specific improvements",
-      status: "idle",
-    },
-    {
-      id: 4,
-      name: "Hydration",
-      description: "SSR safety guards and runtime protection",
-      status: "idle",
-    },
-    {
-      id: 5,
-      name: "Next.js",
-      description: "App Router and framework optimizations",
-      status: "idle",
-    },
-    {
-      id: 6,
-      name: "Testing",
-      description: "Quality assurance and performance validation",
-      status: "idle",
-    },
-  ];
+  // Real orchestration hook
+  const {
+    isAnalyzing,
+    analysisProgress,
+    currentLayer,
+    lastResult,
+    detectedIssues,
+    recommendedLayers,
+    layers,
+    serverOnline,
+    error,
+    warnings,
+    analyzeCode,
+    executeAnalysis,
+    clearResults,
+    clearError,
+  } = useNeuroLintOrchestration();
 
   // Load analysis results and detect currency on component mount
   useEffect(() => {
