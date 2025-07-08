@@ -1,4 +1,4 @@
-const axios = require("axios");
+import axios from "axios";
 
 class ApiClient {
   constructor(baseURL = "https://api.neurolint.dev", apiKey = null) {
@@ -10,7 +10,7 @@ class ApiClient {
     // Try to get auth data if no API key provided
     if (!this.apiKey) {
       try {
-        const { getAuthData } = require("../commands/auth");
+        const { getAuthData } = await import("../commands/auth.js");
         const authData = getAuthData();
         if (authData) {
           this.apiKey = authData.apiKey;

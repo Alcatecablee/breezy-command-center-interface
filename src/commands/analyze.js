@@ -1,12 +1,12 @@
-const chalk = require("chalk");
-const ora = require("ora");
-const fs = require("fs");
-const path = require("path");
-const { glob } = require("glob");
-const { ApiClient } = require("../utils/ApiClient");
-const { ConfigManager } = require("../utils/ConfigManager");
-const { LayerExecutor } = require("../layers/LayerExecutor");
-const { SmartLayerSelector } = require("../layers/SmartLayerSelector");
+import chalk from "chalk";
+import ora from "ora";
+import fs from "fs";
+import path from "path";
+import { glob } from "glob";
+import { ApiClient } from "../utils/ApiClient.js";
+import { ConfigManager } from "../utils/ConfigManager.js";
+import { LayerExecutor } from "../layers/LayerExecutor.js";
+import { SmartLayerSelector } from "../layers/SmartLayerSelector.js";
 
 async function analyzeCommand(targetPath, options) {
   const spinner = ora("Initializing analysis...").start();
@@ -40,9 +40,17 @@ async function analyzeCommand(targetPath, options) {
 
     const smartRecommendations = await analyzeFilesForRecommendations(files);
     if (smartRecommendations.recommendedLayers.length > 0) {
-      console.log(chalk.green(`Recommended layers: ${smartRecommendations.recommendedLayers.join(', ')}`));
-      console.log(chalk.gray(`Confidence: ${Math.round(smartRecommendations.confidence * 100)}%`));
-      smartRecommendations.reasoning.forEach(reason => {
+      console.log(
+        chalk.green(
+          `Recommended layers: ${smartRecommendations.recommendedLayers.join(", ")}`,
+        ),
+      );
+      console.log(
+        chalk.gray(
+          `Confidence: ${Math.round(smartRecommendations.confidence * 100)}%`,
+        ),
+      );
+      smartRecommendations.reasoning.forEach((reason) => {
         console.log(chalk.gray(`  • ${reason}`));
       });
       console.log();
@@ -65,27 +73,38 @@ async function analyzeCommand(targetPath, options) {
 }
 
 async function analyzeFilesForRecommendations(files) {
-  let allRecommendations = { recommendedLayers: [], reasoning: [], confidence: 0 };
-  
-  for (const file of files.slice(0, 10)) { // Analyze first 10 files for recommendations
+  let allRecommendations = {
+    recommendedLayers: [],
+    reasoning: [],
+    confidence: 0,
+  };
+
+  for (const file of files.slice(0, 10)) {
+    // Analyze first 10 files for recommendations
     try {
-      const code = fs.readFileSync(file, 'utf8');
-      const recommendations = SmartLayerSelector.analyzeAndRecommend(code, file);
-      
+      const code = fs.readFileSync(file, "utf8");
+      const recommendations = SmartLayerSelector.analyzeAndRecommend(
+        code,
+        file,
+      );
+
       // Merge recommendations
-      recommendations.recommendedLayers.forEach(layer => {
+      recommendations.recommendedLayers.forEach((layer) => {
         if (!allRecommendations.recommendedLayers.includes(layer)) {
           allRecommendations.recommendedLayers.push(layer);
         }
       });
-      
+
       allRecommendations.reasoning.push(...recommendations.reasoning);
-      allRecommendations.confidence = Math.max(allRecommendations.confidence, recommendations.confidence);
+      allRecommendations.confidence = Math.max(
+        allRecommendations.confidence,
+        recommendations.confidence,
+      );
     } catch (error) {
       // Skip files that can't be read
     }
   }
-  
+
   allRecommendations.recommendedLayers.sort((a, b) => a - b);
   return allRecommendations;
 }
