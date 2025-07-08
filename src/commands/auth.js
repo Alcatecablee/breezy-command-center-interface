@@ -160,9 +160,4 @@ function isAuthenticated() {
   return authData && authData.apiKey;
 }
 
-module.exports = {
-  loginCommand,
-  logout,
-  getAuthData,
-  isAuthenticated,
-};
+export { loginCommand, logout, getAuthData, isAuthenticated };
