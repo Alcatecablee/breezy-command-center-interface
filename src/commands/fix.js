@@ -1,11 +1,11 @@
-const chalk = require("chalk");
-const ora = require("ora");
-const fs = require("fs");
-const path = require("path");
-const { glob } = require("glob");
-const { ApiClient } = require("../utils/ApiClient");
-const { ConfigManager } = require("../utils/ConfigManager");
-const { LayerExecutor } = require("../layers/LayerExecutor");
+import chalk from "chalk";
+import ora from "ora";
+import fs from "fs";
+import path from "path";
+import { glob } from "glob";
+import { ApiClient } from "../utils/ApiClient.js";
+import { ConfigManager } from "../utils/ConfigManager.js";
+import { LayerExecutor } from "../layers/LayerExecutor.js";
 
 async function fixCommand(targetPath, options) {
   const spinner = ora("Initializing fixes...").start();
@@ -206,7 +206,7 @@ function displayFixResults(results, options) {
     chalk.bold("│                 Fix Results                     │"),
   );
   console.log(
-    chalk.bold("├─────────────────────────────────────────────────┤"),
+    chalk.bold("├────────���────────────────────────────────────────┤"),
   );
   console.log(
     `│ Files processed: ${String(summary.filesProcessed).padEnd(30)} │`,

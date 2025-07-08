@@ -1,8 +1,8 @@
-const chalk = require("chalk");
-const ora = require("ora");
-const fs = require("fs");
-const path = require("path");
-const { ConfigManager } = require("../utils/ConfigManager");
+import chalk from "chalk";
+import ora from "ora";
+import fs from "fs";
+import path from "path";
+import { ConfigManager } from "../utils/ConfigManager.js";
 
 async function initCommand(options) {
   const spinner = ora("Initializing NeuroLint...").start();

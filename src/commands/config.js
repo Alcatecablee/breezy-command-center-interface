@@ -1,7 +1,9 @@
-const chalk = require("chalk");
-const fs = require("fs");
-const path = require("path");
-const { ConfigManager } = require("../utils/ConfigManager");
+import chalk from "chalk";
+import fs from "fs";
+import path from "path";
+import { ConfigManager } from "../utils/ConfigManager.js";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 async function configCommand(options) {
   try {
