@@ -1,3 +1,4 @@
+
 const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
@@ -14,7 +15,7 @@ class LayerExecutor {
   constructor() {
     this.layerScripts = {
       1: "fix-layer-1-config.js",
-      2: "fix-layer-2-patterns.js",
+      2: "fix-layer-2-patterns.js", 
       3: "fix-layer-3-components.js",
       4: "fix-layer-4-hydration.js",
       5: "fix-layer-5-nextjs.js",
@@ -23,7 +24,7 @@ class LayerExecutor {
 
     this.layerDescriptions = {
       1: "Configuration Validation",
-      2: "Pattern & Entity Fixes",
+      2: "Pattern & Entity Fixes", 
       3: "Component Best Practices",
       4: "Hydration & SSR Guard",
       5: "Next.js App Router Optimization",

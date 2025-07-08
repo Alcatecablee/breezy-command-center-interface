@@ -6,6 +6,7 @@ const { glob } = require("glob");
 const { ApiClient } = require("../utils/ApiClient");
 const { ConfigManager } = require("../utils/ConfigManager");
 const { LayerExecutor } = require("../layers/LayerExecutor");
+const { SmartLayerSelector } = require("../layers/SmartLayerSelector");
 
 async function analyzeCommand(targetPath, options) {
   const spinner = ora("Initializing analysis...").start();
@@ -33,6 +34,20 @@ async function analyzeCommand(targetPath, options) {
 
     spinner.succeed(`Found ${files.length} files to analyze`);
 
+    // Smart layer recommendations
+    console.log(chalk.blue("🧠 Smart Layer Analysis"));
+    console.log(chalk.gray("=".repeat(50)));
+
+    const smartRecommendations = await analyzeFilesForRecommendations(files);
+    if (smartRecommendations.recommendedLayers.length > 0) {
+      console.log(chalk.green(`Recommended layers: ${smartRecommendations.recommendedLayers.join(', ')}`));
+      console.log(chalk.gray(`Confidence: ${Math.round(smartRecommendations.confidence * 100)}%`));
+      smartRecommendations.reasoning.forEach(reason => {
+        console.log(chalk.gray(`  • ${reason}`));
+      });
+      console.log();
+    }
+
     // Execute analysis
     console.log(chalk.blue("Starting NeuroLint Analysis"));
     console.log(chalk.gray("=".repeat(50)));
@@ -47,6 +62,32 @@ async function analyzeCommand(targetPath, options) {
       console.error(error.stack);
     }
   }
+}
+
+async function analyzeFilesForRecommendations(files) {
+  let allRecommendations = { recommendedLayers: [], reasoning: [], confidence: 0 };
+  
+  for (const file of files.slice(0, 10)) { // Analyze first 10 files for recommendations
+    try {
+      const code = fs.readFileSync(file, 'utf8');
+      const recommendations = SmartLayerSelector.analyzeAndRecommend(code, file);
+      
+      // Merge recommendations
+      recommendations.recommendedLayers.forEach(layer => {
+        if (!allRecommendations.recommendedLayers.includes(layer)) {
+          allRecommendations.recommendedLayers.push(layer);
+        }
+      });
+      
+      allRecommendations.reasoning.push(...recommendations.reasoning);
+      allRecommendations.confidence = Math.max(allRecommendations.confidence, recommendations.confidence);
+    } catch (error) {
+      // Skip files that can't be read
+    }
+  }
+  
+  allRecommendations.recommendedLayers.sort((a, b) => a - b);
+  return allRecommendations;
 }
 
 async function collectFiles(targetPath, options) {
