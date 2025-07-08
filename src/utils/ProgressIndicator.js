@@ -1,6 +1,5 @@
-
-const ora = require("ora");
-const chalk = require("chalk");
+import ora from "ora";
+import chalk from "chalk";
 
 class ProgressIndicator {
   constructor() {
@@ -9,7 +8,7 @@ class ProgressIndicator {
       current: 0,
       total: 0,
       startTime: null,
-      operation: null
+      operation: null,
     };
   }
 
@@ -18,12 +17,12 @@ class ProgressIndicator {
       current: 0,
       total,
       startTime: Date.now(),
-      operation: message
+      operation: message,
     };
 
     this.spinner = ora({
       text: this.formatMessage(message),
-      spinner: 'dots12'
+      spinner: "dots12",
     }).start();
 
     return this;
@@ -33,7 +32,7 @@ class ProgressIndicator {
     if (!this.spinner) return this;
 
     this.progressState.current = current;
-    
+
     const displayMessage = message || this.progressState.operation;
     this.spinner.text = this.formatMessage(displayMessage);
 
@@ -49,7 +48,7 @@ class ProgressIndicator {
 
     const finalMessage = message || `${this.progressState.operation} completed`;
     const duration = this.getDuration();
-    
+
     this.spinner.succeed(`${finalMessage} ${chalk.gray(`(${duration})`)}`);
     this.spinner = null;
 
@@ -61,7 +60,7 @@ class ProgressIndicator {
 
     const finalMessage = message || `${this.progressState.operation} failed`;
     const duration = this.getDuration();
-    
+
     this.spinner.fail(`${finalMessage} ${chalk.gray(`(${duration})`)}`);
     this.spinner = null;
 
@@ -90,24 +89,24 @@ class ProgressIndicator {
 
   formatMessage(message) {
     const { current, total } = this.progressState;
-    
+
     if (total > 0) {
       const percentage = Math.round((current / total) * 100);
       const eta = this.getETA();
       return `${message} [${current}/${total}] ${percentage}% ${eta}`;
     }
-    
+
     return message;
   }
 
   getDuration() {
-    if (!this.progressState.startTime) return '';
-    
+    if (!this.progressState.startTime) return "";
+
     const duration = Date.now() - this.progressState.startTime;
-    
+
     if (duration < 1000) return `${duration}ms`;
     if (duration < 60000) return `${(duration / 1000).toFixed(1)}s`;
-    
+
     const minutes = Math.floor(duration / 60000);
     const seconds = Math.floor((duration % 60000) / 1000);
     return `${minutes}m ${seconds}s`;
@@ -115,17 +114,17 @@ class ProgressIndicator {
 
   getETA() {
     const { current, total, startTime } = this.progressState;
-    
-    if (!startTime || current === 0 || total === 0) return '';
-    
+
+    if (!startTime || current === 0 || total === 0) return "";
+
     const elapsed = Date.now() - startTime;
     const rate = current / elapsed;
     const remaining = (total - current) / rate;
-    
+
     if (remaining < 60000) {
       return chalk.gray(`ETA: ${Math.round(remaining / 1000)}s`);
     }
-    
+
     const minutes = Math.floor(remaining / 60000);
     return chalk.gray(`ETA: ${minutes}m`);
   }
@@ -140,7 +139,7 @@ class ProgressIndicator {
       succeed: (message) => progress.succeed(message),
       fail: (message) => progress.fail(message),
       warn: (message) => progress.warn(message),
-      info: (message) => progress.info(message)
+      info: (message) => progress.info(message),
     };
   }
 }
