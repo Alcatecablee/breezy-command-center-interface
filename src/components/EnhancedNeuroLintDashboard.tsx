@@ -363,6 +363,9 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-black">
       <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Database Setup Warning */}
+        <DatabaseSetupWarning />
+
         {/* Header with User Info */}
         <header className="mb-16">
           <div className="flex items-center justify-between mb-8">
