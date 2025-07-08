@@ -1,9 +1,11 @@
-const chalk = require("chalk");
-const ora = require("ora");
-const fs = require("fs");
-const path = require("path");
-const os = require("os");
-const { ApiClient } = require("../utils/ApiClient");
+import chalk from "chalk";
+import ora from "ora";
+import fs from "fs";
+import path from "path";
+import os from "os";
+import { ApiClient } from "../utils/ApiClient.js";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 
 const AUTH_FILE = path.join(os.homedir(), ".neurolint-auth.json");
 
