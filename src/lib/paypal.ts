@@ -135,10 +135,10 @@ export const cancelSubscription = async (subscriptionId: string) => {
 
 // PayPal configuration for South Africa
 export const paypalConfig = {
-  "client-id": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "",
+  "client-id": import.meta.env.VITE_PAYPAL_CLIENT_ID || "",
   currency: "ZAR", // South African Rand
   intent: "subscription",
-  "data-client-token": process.env.NEXT_PUBLIC_PAYPAL_CLIENT_TOKEN || "",
+  "data-client-token": import.meta.env.VITE_PAYPAL_CLIENT_TOKEN || "",
   locale: "en_ZA", // South African English
 };
 
