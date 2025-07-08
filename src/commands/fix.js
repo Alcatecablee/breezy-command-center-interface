@@ -5,7 +5,11 @@ import path from "path";
 import { glob } from "glob";
 import { ApiClient } from "../utils/ApiClient.js";
 import { ConfigManager } from "../utils/ConfigManager.js";
-import { LayerExecutor } from "../layers/LayerExecutor.js";
+import {
+  NeuroLintOrchestrator,
+  executeNeuroLint,
+  executeBatchNeuroLint,
+} from "../core/NeuroLintOrchestrator.js";
 
 async function fixCommand(targetPath, options) {
   const spinner = ora("Initializing fixes...").start();

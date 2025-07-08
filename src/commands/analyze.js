@@ -5,7 +5,10 @@ import path from "path";
 import { glob } from "glob";
 import { ApiClient } from "../utils/ApiClient.js";
 import { ConfigManager } from "../utils/ConfigManager.js";
-import { LayerExecutor } from "../layers/LayerExecutor.js";
+import {
+  NeuroLintOrchestrator,
+  analyzeCode,
+} from "../core/NeuroLintOrchestrator.js";
 import { SmartLayerSelector } from "../layers/SmartLayerSelector.js";
 
 async function analyzeCommand(targetPath, options) {
@@ -240,7 +243,7 @@ function displayTable(results) {
     `│ Layers used: [${summary.layersUsed.join(", ")}]${" ".repeat(31 - summary.layersUsed.join(", ").length)} │`,
   );
   console.log(
-    chalk.bold("└─────────────────────────────────────────────────┘"),
+    chalk.bold("└─────────────────────────────────��───────────────┘"),
   );
 
   if (issues.length > 0) {
