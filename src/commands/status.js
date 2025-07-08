@@ -173,27 +173,27 @@ function satisfiesNodeVersion(version) {
 
 function displayStatus(status, detailed) {
   console.log();
-  console.log(chalk.bold("📊 NeuroLint Status Report"));
+  console.log(chalk.bold("NeuroLint Status Report"));
   console.log(chalk.gray("=========================="));
 
   // Project Status
   console.log();
-  console.log(chalk.bold("📁 Project"));
+  console.log(chalk.bold("Project"));
   console.log(`   Path: ${chalk.blue(status.project.path)}`);
   console.log(`   Type: ${chalk.white(status.project.type || "Unknown")}`);
   console.log(
-    `   NeuroLint: ${status.project.initialized ? chalk.green("✅ Initialized") : chalk.red("❌ Not initialized")}`,
+    `   NeuroLint: ${status.project.initialized ? chalk.green("Initialized") : chalk.red("Not initialized")}`,
   );
 
   if (detailed) {
     console.log(
-      `   Package.json: ${status.project.packageJson ? chalk.green("✅") : chalk.red("❌")}`,
+      `   Package.json: ${status.project.packageJson ? chalk.green("Yes") : chalk.red("No")}`,
     );
     console.log(
-      `   TypeScript: ${status.project.tsconfig ? chalk.green("✅") : chalk.red("❌")}`,
+      `   TypeScript: ${status.project.tsconfig ? chalk.green("Yes") : chalk.red("No")}`,
     );
     console.log(
-      `   Next.js: ${status.project.nextConfig ? chalk.green("✅") : chalk.red("❌")}`,
+      `   Next.js: ${status.project.nextConfig ? chalk.green("Yes") : chalk.red("No")}`,
     );
     if (status.project.dependencies) {
       console.log(
@@ -204,9 +204,9 @@ function displayStatus(status, detailed) {
 
   // Configuration Status
   console.log();
-  console.log(chalk.bold("⚙️  Configuration"));
+  console.log(chalk.bold("Configuration"));
   if (status.config.valid) {
-    console.log(`   Status: ${chalk.green("✅ Valid")}`);
+    console.log(`   Status: ${chalk.green("Valid")}`);
     console.log(
       `   Enabled Layers: ${chalk.white(status.config.enabledLayers.join(", "))}`,
     );
@@ -219,15 +219,15 @@ function displayStatus(status, detailed) {
       );
     }
   } else {
-    console.log(`   Status: ${chalk.red("❌ Invalid")}`);
+    console.log(`   Status: ${chalk.red("Invalid")}`);
     console.log(`   Error: ${chalk.red(status.config.error)}`);
   }
 
   // Authentication Status
   console.log();
-  console.log(chalk.bold("🔐 Authentication"));
+  console.log(chalk.bold("Authentication"));
   if (status.auth.authenticated) {
-    console.log(`   Status: ${chalk.green("✅ Authenticated")}`);
+    console.log(`   Status: ${chalk.green("Authenticated")}`);
     console.log(`   User: ${chalk.white(status.auth.user)}`);
     console.log(`   Plan: ${chalk.white(status.auth.plan)}`);
     if (detailed) {
@@ -235,15 +235,15 @@ function displayStatus(status, detailed) {
       console.log(`   API URL: ${chalk.white(status.auth.apiUrl)}`);
     }
   } else {
-    console.log(`   Status: ${chalk.yellow("⚠️  Not authenticated")}`);
+    console.log(`   Status: ${chalk.yellow("Not authenticated")}`);
     console.log(`   Note: ${chalk.gray("Some features may be limited")}`);
   }
 
   // API Status
   console.log();
-  console.log(chalk.bold("🌐 API Connection"));
+  console.log(chalk.bold("API Connection"));
   if (status.api.available) {
-    console.log(`   Status: ${chalk.green("✅ Available")}`);
+    console.log(`   Status: ${chalk.green("Available")}`);
     console.log(`   Version: ${chalk.white(status.api.version || "Unknown")}`);
     if (detailed && status.api.responseTime) {
       console.log(
@@ -251,7 +251,7 @@ function displayStatus(status, detailed) {
       );
     }
   } else {
-    console.log(`   Status: ${chalk.red("❌ Unavailable")}`);
+    console.log(`   Status: ${chalk.red("Unavailable")}`);
     console.log(`   Error: ${chalk.red(status.api.error)}`);
     console.log(`   Note: ${chalk.gray("Local analysis will be used")}`);
   }
@@ -259,9 +259,9 @@ function displayStatus(status, detailed) {
   // Environment Status
   if (detailed) {
     console.log();
-    console.log(chalk.bold("💻 Environment"));
+    console.log(chalk.bold("Environment"));
     console.log(
-      `   Node.js: ${status.environment.node.compatible ? chalk.green("✅") : chalk.red("❌")} ${status.environment.node.version}`,
+      `   Node.js: ${status.environment.node.compatible ? chalk.green("Compatible") : chalk.red("Incompatible")} ${status.environment.node.version}`,
     );
     console.log(
       `   Platform: ${chalk.white(status.environment.system.platform)} (${status.environment.system.arch})`,
@@ -273,28 +273,24 @@ function displayStatus(status, detailed) {
 
   // Recommendations
   console.log();
-  console.log(chalk.bold("💡 Recommendations"));
+  console.log(chalk.bold("Recommendations"));
 
   if (!status.project.initialized) {
-    console.log(
-      `   ${chalk.yellow("•")} Run ${chalk.cyan("neurolint init")} to set up NeuroLint`,
-    );
+    console.log(`   Run ${chalk.cyan("neurolint init")} to set up NeuroLint`);
   }
 
   if (!status.auth.authenticated) {
     console.log(
-      `   ${chalk.yellow("•")} Run ${chalk.cyan("neurolint login")} for advanced features`,
+      `   Run ${chalk.cyan("neurolint login")} for advanced features`,
     );
   }
 
   if (!status.api.available) {
-    console.log(
-      `   ${chalk.yellow("•")} Check internet connection for API features`,
-    );
+    console.log(`   Check internet connection for API features`);
   }
 
   if (!status.environment.node.compatible) {
-    console.log(`   ${chalk.red("•")} Upgrade Node.js to version 16 or higher`);
+    console.log(`   Upgrade Node.js to version 16 or higher`);
   }
 
   if (
@@ -303,7 +299,7 @@ function displayStatus(status, detailed) {
     status.config.enabledLayers.length > 0
   ) {
     console.log(
-      `   ${chalk.green("•")} Your setup looks good! Try ${chalk.cyan("neurolint analyze")}`,
+      `   Your setup looks good! Try ${chalk.cyan("neurolint analyze")}`,
     );
   }
 }
