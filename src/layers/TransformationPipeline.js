@@ -227,6 +227,19 @@ class TransformationPipeline {
    * Get performance metrics for the pipeline
    */
   getPerformanceMetrics() {
+    if (this.metadata.length === 0) {
+      return {
+        totalExecutionTime: 0,
+        averageLayerTime: 0,
+        successfulLayers: 0,
+        failedLayers: 0,
+        slowestLayer: null,
+        layerTimes: [],
+        stateCount: this.states.length,
+        totalChanges: 0,
+      };
+    }
+
     const totalTime = this.metadata.reduce(
       (sum, m) => sum + m.executionTime,
       0,
@@ -240,9 +253,12 @@ class TransformationPipeline {
       success: m.success,
     }));
 
-    const slowestLayer = layerTimes.reduce((slowest, current) =>
-      current.executionTime > slowest.executionTime ? current : slowest,
-    );
+    const slowestLayer =
+      layerTimes.length > 0
+        ? layerTimes.reduce((slowest, current) =>
+            current.executionTime > slowest.executionTime ? current : slowest,
+          )
+        : null;
 
     return {
       totalExecutionTime: totalTime,
