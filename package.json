@@ -1,12 +1,57 @@
 {
-  "name": "code",
+  "name": "@neurolint/cli",
   "version": "1.0.0",
-  "description": "NEUROLINT cli",
-  "main": "index.js",
-  "scripts": {
-    "dev": "node -e \"console.log('Development server running...'); require('http').createServer((req, res) => { res.writeHead(200, {'Content-Type': 'text/html'}); res.end('<h1>NEUROLINT CLI Development Server</h1><p>Server is running successfully!</p>'); }).listen(3000, () => console.log('Server running on http://localhost:3000'));\""
+  "description": "Advanced rule-based code analysis and transformation tool using AST parsing and sophisticated pattern matching",
+  "main": "src/index.js",
+  "bin": {
+    "neurolint": "./bin/neurolint.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "scripts": {
+    "dev": "node src/index.js",
+    "build": "node scripts/build.js",
+    "test": "node scripts/test.js",
+    "start": "node bin/neurolint.js",
+    "clean": "rm -rf dist/ build/",
+    "package": "npm pack"
+  },
+  "keywords": [
+    "code-analysis",
+    "ast",
+    "typescript",
+    "react",
+    "nextjs",
+    "cli",
+    "code-transformation",
+    "linting",
+    "fixing"
+  ],
+  "author": "NeuroLint",
+  "license": "MIT",
+  "homepage": "https://neurolint.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Alcatecablee/nurolint"
+  },
+  "bugs": {
+    "url": "https://neurolint.dev/support"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "boxen": "^7.1.1",
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "glob": "^10.3.10",
+    "ora": "^8.0.1"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "scripts/",
+    "README.md",
+    "LICENSE"
+  ],
+  "preferGlobal": true
 }
