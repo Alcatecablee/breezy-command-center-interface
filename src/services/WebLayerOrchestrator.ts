@@ -865,9 +865,13 @@ class WebLayerOrchestrator {
     try {
       // Add timeout to prevent hanging
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
-      const response = await fetch(`${this.baseUrl}/api/health`, {
+      const apiUrl = this.baseUrl
+        ? `${this.baseUrl}/api/health`
+        : "/api/health";
+
+      const response = await fetch(apiUrl, {
         signal: controller.signal,
         method: "GET",
         headers: {
@@ -879,6 +883,7 @@ class WebLayerOrchestrator {
 
       if (response.ok) {
         const data = await response.json();
+        console.log("✅ API server connection successful");
         return { online: true, version: data.version };
       } else {
         console.warn(`Server responded with status: ${response.status}`);
@@ -890,10 +895,7 @@ class WebLayerOrchestrator {
           "Server health check timed out - API server may not be running",
         );
       } else if (error.message.includes("Failed to fetch")) {
-        console.warn(
-          "Cannot connect to API server - check if it's running on",
-          this.baseUrl,
-        );
+        console.warn("Cannot connect to API server - using client-side mode");
       } else {
         console.warn(
           "Server not available, using client-side fallback:",
