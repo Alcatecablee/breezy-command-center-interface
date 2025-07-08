@@ -8,9 +8,9 @@ import { isSupabaseConfigured } from "./lib/supabase";
 function AppContent() {
   const { user, loading } = useAuth();
 
-  // For demo purposes, if Supabase is not configured, use demo mode
+  // Show configuration notice if Supabase is not set up
   if (!isSupabaseConfigured) {
-    return <EnhancedNeuroLintDashboard />;
+    return <ConfigurationNotice />;
   }
 
   if (loading) {
