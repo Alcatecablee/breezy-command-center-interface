@@ -13,6 +13,7 @@ import {
 } from "../lib/paypal";
 import type { AnalysisResult } from "../lib/supabase";
 import useNeuroLintOrchestration from "../hooks/useNeuroLintOrchestration";
+import { DatabaseSetupWarning } from "./DatabaseSetupWarning";
 
 interface CodeInputModalProps {
   isOpen: boolean;
