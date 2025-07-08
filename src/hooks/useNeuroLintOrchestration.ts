@@ -123,7 +123,7 @@ export function useNeuroLintOrchestration(): UseNeuroLintOrchestrationState &
       }));
 
       try {
-        // Track usage
+        // Track usage (skip in demo mode)
         if (user) {
           await trackUsage(user.id, "analysis_started", {
             codeLength: code.length,
