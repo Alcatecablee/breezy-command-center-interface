@@ -98,22 +98,24 @@ const NeuroLintDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-black">
       <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Header */}
         <header className="mb-16">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-8 h-8 bg-black rounded-md flex items-center justify-center">
-              <div className="w-4 h-4 bg-white rounded-sm"></div>
-            </div>
-            <h1 className="text-2xl font-semibold text-black">NeuroLint</h1>
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2F650a7e0d23ac407b922479927bc68a9d%2F1286c7bdebf845ef9bedd75d9d3ba4c3?format=webp&width=800"
+              alt="NeuroLint"
+              className="w-8 h-8"
+            />
+            <h1 className="text-2xl font-semibold text-white">NeuroLint</h1>
           </div>
 
           <div className="max-w-2xl">
-            <h2 className="text-4xl font-bold text-black mb-4 leading-tight">
+            <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
               Enterprise Code Analysis Platform
             </h2>
-            <p className="text-lg text-gray-600 leading-relaxed">
+            <p className="text-lg text-gray-400 leading-relaxed">
               Advanced 6-layer orchestration system for TypeScript, React, and
               Next.js codebases. Built for teams that demand reliability,
               performance, and comprehensive error recovery.
@@ -121,27 +123,27 @@ const NeuroLintDashboard: React.FC = () => {
           </div>
 
           {/* Key Metrics */}
-          <div className="grid grid-cols-4 gap-8 mt-12 pt-8 border-t border-gray-200">
+          <div className="grid grid-cols-4 gap-8 mt-12 pt-8 border-t border-gray-800">
             <div>
-              <div className="text-2xl font-bold text-black">127+</div>
+              <div className="text-2xl font-bold text-white">127+</div>
               <div className="text-sm text-gray-500 uppercase tracking-wide">
                 Files Processed
               </div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-black">99.7%</div>
+              <div className="text-2xl font-bold text-white">99.7%</div>
               <div className="text-sm text-gray-500 uppercase tracking-wide">
                 Success Rate
               </div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-black">6</div>
+              <div className="text-2xl font-bold text-white">6</div>
               <div className="text-sm text-gray-500 uppercase tracking-wide">
                 Analysis Layers
               </div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-black">1.8s</div>
+              <div className="text-2xl font-bold text-white">1.8s</div>
               <div className="text-sm text-gray-500 uppercase tracking-wide">
                 Avg Response
               </div>
@@ -152,8 +154,8 @@ const NeuroLintDashboard: React.FC = () => {
         {/* Main Content */}
         <div className="grid lg:grid-cols-3 gap-8 mb-16">
           {/* Analysis Control */}
-          <div className="lg:col-span-1 bg-gray-50 border border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-black mb-6">
+          <div className="lg:col-span-1 bg-gray-900 border border-gray-800 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-6">
               Run Analysis
             </h3>
 
@@ -199,8 +201,8 @@ const NeuroLintDashboard: React.FC = () => {
           </div>
 
           {/* Results */}
-          <div className="lg:col-span-2 border border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-black mb-6">
+          <div className="lg:col-span-2 border border-gray-800 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-white mb-6">
               Analysis Results
             </h3>
 
@@ -208,32 +210,32 @@ const NeuroLintDashboard: React.FC = () => {
               <div className="space-y-6">
                 {/* Summary Metrics */}
                 <div className="grid grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-gray-50 rounded-md">
-                    <div className="text-2xl font-bold text-black">
+                  <div className="text-center p-4 bg-gray-800 rounded-md">
+                    <div className="text-2xl font-bold text-white">
                       {results.filesAnalyzed}
                     </div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide">
                       Files
                     </div>
                   </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-md">
-                    <div className="text-2xl font-bold text-black">
+                  <div className="text-center p-4 bg-gray-800 rounded-md">
+                    <div className="text-2xl font-bold text-white">
                       {results.issuesFound}
                     </div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide">
                       Issues Fixed
                     </div>
                   </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-md">
-                    <div className="text-2xl font-bold text-black">
+                  <div className="text-center p-4 bg-gray-800 rounded-md">
+                    <div className="text-2xl font-bold text-white">
                       {results.executionTime}ms
                     </div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide">
                       Duration
                     </div>
                   </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-md">
-                    <div className="text-2xl font-bold text-black">
+                  <div className="text-center p-4 bg-gray-800 rounded-md">
+                    <div className="text-2xl font-bold text-white">
                       {results.cacheHitRate}%
                     </div>
                     <div className="text-xs text-gray-500 uppercase tracking-wide">
@@ -244,7 +246,7 @@ const NeuroLintDashboard: React.FC = () => {
 
                 {/* Improvements */}
                 <div>
-                  <h4 className="font-medium text-black mb-3">
+                  <h4 className="font-medium text-white mb-3">
                     Applied Improvements
                   </h4>
                   <div className="space-y-2">
@@ -253,21 +255,21 @@ const NeuroLintDashboard: React.FC = () => {
                         key={index}
                         className="flex items-start gap-3 text-sm"
                       >
-                        <div className="w-1.5 h-1.5 bg-black rounded-full mt-2 flex-shrink-0"></div>
-                        <span className="text-gray-700">{improvement}</span>
+                        <div className="w-1.5 h-1.5 bg-white rounded-full mt-2 flex-shrink-0"></div>
+                        <span className="text-gray-400">{improvement}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="text-xs text-gray-500 pt-4 border-t border-gray-200">
+                <div className="text-xs text-gray-500 pt-4 border-t border-gray-800">
                   Completed {new Date(results.timestamp).toLocaleString()}
                 </div>
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="text-gray-500 mb-2">No results available</div>
-                <div className="text-sm text-gray-400">
+                <div className="text-gray-400 mb-2">No results available</div>
+                <div className="text-sm text-gray-500">
                   Run an analysis to see detailed results
                 </div>
               </div>
@@ -277,7 +279,7 @@ const NeuroLintDashboard: React.FC = () => {
 
         {/* Layer Architecture */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-black mb-8">
+          <h2 className="text-2xl font-bold text-white mb-8">
             6-Layer Architecture
           </h2>
 
@@ -287,22 +289,22 @@ const NeuroLintDashboard: React.FC = () => {
                 key={layer.id}
                 className={`border rounded-lg p-4 transition-all ${
                   currentLayer === layer.id
-                    ? "border-black bg-gray-50"
-                    : "border-gray-200 hover:border-gray-300"
+                    ? "border-white bg-gray-800"
+                    : "border-gray-800 hover:border-gray-700"
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h3 className="font-medium text-black">{layer.name}</h3>
+                    <h3 className="font-medium text-white">{layer.name}</h3>
                     <div className="text-xs text-gray-500">
                       Layer {layer.id}
                     </div>
                   </div>
                   {currentLayer === layer.id && (
-                    <div className="w-2 h-2 bg-black rounded-full"></div>
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
                   )}
                 </div>
-                <p className="text-sm text-gray-600 leading-relaxed">
+                <p className="text-sm text-gray-400 leading-relaxed">
                   {layer.description}
                 </p>
               </div>
@@ -313,28 +315,28 @@ const NeuroLintDashboard: React.FC = () => {
         {/* Enterprise Features */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
           <div>
-            <h3 className="font-semibold text-black mb-3">
+            <h3 className="font-semibold text-white mb-3">
               AST-First Analysis
             </h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-sm text-gray-400 leading-relaxed">
               Advanced Abstract Syntax Tree parsing with intelligent regex
               fallback strategies for comprehensive code understanding.
             </p>
           </div>
 
           <div>
-            <h3 className="font-semibold text-black mb-3">Error Recovery</h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <h3 className="font-semibold text-white mb-3">Error Recovery</h3>
+            <p className="text-sm text-gray-400 leading-relaxed">
               Enterprise-grade error handling with automatic rollback,
               comprehensive logging, and detailed recovery suggestions.
             </p>
           </div>
 
           <div>
-            <h3 className="font-semibold text-black mb-3">
+            <h3 className="font-semibold text-white mb-3">
               Performance Optimization
             </h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
+            <p className="text-sm text-gray-400 leading-relaxed">
               Intelligent caching, parallel processing, and resource monitoring
               for optimal performance at scale.
             </p>
@@ -342,8 +344,8 @@ const NeuroLintDashboard: React.FC = () => {
         </div>
 
         {/* CLI Reference */}
-        <div className="border border-gray-200 rounded-lg p-6">
-          <h3 className="font-semibold text-black mb-4">
+        <div className="border border-gray-800 rounded-lg p-6">
+          <h3 className="font-semibold text-white mb-4">
             Command Line Interface
           </h3>
 
@@ -389,10 +391,14 @@ const NeuroLintDashboard: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <footer className="mt-16 pt-8 border-t border-gray-200 text-center">
+        <footer className="mt-16 pt-8 border-t border-gray-800 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <div className="w-4 h-4 bg-black rounded-sm"></div>
-            <span className="font-medium text-black">NeuroLint Enterprise</span>
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets%2F650a7e0d23ac407b922479927bc68a9d%2F1286c7bdebf845ef9bedd75d9d3ba4c3?format=webp&width=800"
+              alt="NeuroLint"
+              className="w-4 h-4"
+            />
+            <span className="font-medium text-white">NeuroLint Enterprise</span>
           </div>
           <p className="text-sm text-gray-500">
             Advanced code analysis • Enterprise reliability • Production ready
