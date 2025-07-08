@@ -715,33 +715,77 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
           </h2>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {layers.map((layer) => (
-              <div
-                key={layer.id}
-                className={`border rounded-lg p-4 transition-all ${
-                  currentLayer === layer.id
-                    ? "border-white bg-gray-800"
-                    : "border-gray-800 hover:border-gray-700"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="font-medium text-white">{layer.name}</h3>
-                    <div className="text-xs text-gray-500">
-                      Layer {layer.id}
+            {layers.map((layer) => {
+              const isActive = currentLayer === layer.id;
+              const wasExecuted = lastResult?.results.find(
+                (r) => r.layerId === layer.id,
+              );
+              const isRecommended = recommendedLayers.includes(layer.id);
+
+              return (
+                <div
+                  key={layer.id}
+                  className={`border rounded-lg p-4 transition-all ${
+                    isActive
+                      ? "border-white bg-gray-800"
+                      : wasExecuted?.success
+                        ? "border-green-600 bg-green-900/20"
+                        : wasExecuted && !wasExecuted.success
+                          ? "border-red-600 bg-red-900/20"
+                          : isRecommended
+                            ? "border-blue-600 bg-blue-900/20"
+                            : "border-gray-800 hover:border-gray-700"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h3 className="font-medium text-white">{layer.name}</h3>
+                      <div className="text-xs text-gray-500">
+                        Layer {layer.id}
+                        {isRecommended && (
+                          <span className="text-blue-400 ml-2">
+                            • Recommended
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {isActive && (
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                      )}
+                      {wasExecuted?.success && (
+                        <div className="text-green-400 text-sm">✓</div>
+                      )}
+                      {wasExecuted && !wasExecuted.success && (
+                        <div className="text-red-400 text-sm">✗</div>
+                      )}
                     </div>
                   </div>
-                  {currentLayer === layer.id && (
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  <p className="text-sm text-gray-400 leading-relaxed mb-2">
+                    {layer.description}
+                  </p>
+                  {wasExecuted && (
+                    <div className="text-xs text-gray-500">
+                      {wasExecuted.success
+                        ? `${wasExecuted.changeCount} changes in ${wasExecuted.executionTime.toFixed(0)}ms`
+                        : `Failed: ${wasExecuted.error}`}
+                    </div>
                   )}
                 </div>
-                <p className="text-sm text-gray-400 leading-relaxed">
-                  {layer.description}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
+
+        {/* Code Input Modal */}
+        <CodeInputModal
+          isOpen={showCodeInput}
+          onClose={() => setShowCodeInput(false)}
+          onAnalyze={handleCodeAnalysis}
+          recommendedLayers={recommendedLayers}
+          detectedIssues={detectedIssues}
+          isAnalyzing={isAnalyzing}
+        />
       </div>
     </div>
   );
