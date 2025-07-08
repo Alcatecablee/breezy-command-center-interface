@@ -11,7 +11,6 @@
     "dev": "node src/index.js",
     "build": "node scripts/build.js",
     "test": "echo 'CLI tests would run here'",
-    "test": "echo 'CLI tests would run here'",
     "clean": "rm -rf dist/ build/",
     "package": "npm pack"
   },
@@ -40,12 +39,14 @@
     "node": ">=16.0.0"
   },
   "dependencies": {
+    "@vitejs/plugin-react": "^4.6.0",
     "axios": "^1.6.2",
     "boxen": "^7.1.1",
     "chalk": "^5.3.0",
     "commander": "^11.1.0",
     "glob": "^10.3.10",
-    "ora": "^8.0.1"
+    "ora": "^8.0.1",
+    "vite": "^7.0.2"
   },
   "files": [
     "bin/",
