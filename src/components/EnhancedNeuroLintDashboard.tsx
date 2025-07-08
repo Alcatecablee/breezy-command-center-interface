@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../lib/auth-context";
-import {
-  createAnalysisResult,
-  getAnalysisResults,
-  trackUsage,
-} from "../lib/supabase";
+import { getAnalysisResults } from "../lib/supabase";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import {
   getPayPalConfig,
@@ -16,62 +12,253 @@ import {
   currencyLocaleMap,
 } from "../lib/paypal";
 import type { AnalysisResult } from "../lib/supabase";
+import useNeuroLintOrchestration from "../hooks/useNeuroLintOrchestration";
+import { DatabaseSetupWarning } from "./DatabaseSetupWarning";
 
-interface LayerInfo {
-  id: number;
-  name: string;
-  description: string;
-  status: "idle" | "running" | "complete" | "error";
+interface CodeInputModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAnalyze: (code: string, selectedLayers: number[]) => void;
+  recommendedLayers: number[];
+  detectedIssues: any[];
+  isAnalyzing: boolean;
 }
+
+// Code Input Modal Component
+const CodeInputModal: React.FC<CodeInputModalProps> = ({
+  isOpen,
+  onClose,
+  onAnalyze,
+  recommendedLayers,
+  detectedIssues,
+  isAnalyzing,
+}) => {
+  const [code, setCode] = useState("");
+  const [selectedLayers, setSelectedLayers] = useState<number[]>([]);
+  const [activeTab, setActiveTab] = useState<"input" | "analysis">("input");
+
+  useEffect(() => {
+    if (recommendedLayers.length > 0) {
+      setSelectedLayers(recommendedLayers);
+      setActiveTab("analysis");
+    }
+  }, [recommendedLayers]);
+
+  const handleLayerToggle = (layerId: number) => {
+    setSelectedLayers((prev) =>
+      prev.includes(layerId)
+        ? prev.filter((id) => id !== layerId)
+        : [...prev, layerId].sort(),
+    );
+  };
+
+  const handleAnalyze = () => {
+    if (code.trim() && selectedLayers.length > 0) {
+      onAnalyze(code, selectedLayers);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 border border-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div className="flex items-center justify-between p-6 border-b border-gray-800">
+          <h3 className="text-xl font-semibold text-white">
+            NeuroLint Code Analysis
+          </h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-white">
+            ✕
+          </button>
+        </div>
+
+        <div className="flex border-b border-gray-800">
+          <button
+            onClick={() => setActiveTab("input")}
+            className={`px-6 py-3 text-sm font-medium ${
+              activeTab === "input"
+                ? "text-white border-b-2 border-white"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            Code Input
+          </button>
+          <button
+            onClick={() => setActiveTab("analysis")}
+            className={`px-6 py-3 text-sm font-medium ${
+              activeTab === "analysis"
+                ? "text-white border-b-2 border-white"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            Analysis & Layers
+          </button>
+        </div>
+
+        <div className="p-6 max-h-[60vh] overflow-y-auto">
+          {activeTab === "input" && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-white mb-2">
+                  Paste your TypeScript/React code:
+                </label>
+                <textarea
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="// Paste your code here...&#10;function MyComponent() {&#10;  return <div>Hello World</div>;&#10;}"
+                  className="w-full h-64 bg-gray-800 border border-gray-700 rounded-md p-3 text-white font-mono text-sm resize-none focus:outline-none focus:border-white"
+                />
+              </div>
+              {code && (
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setActiveTab("analysis")}
+                    className="bg-white text-black px-4 py-2 rounded-md font-medium hover:bg-gray-200"
+                  >
+                    Analyze Code →
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "analysis" && (
+            <div className="space-y-6">
+              {detectedIssues.length > 0 && (
+                <div>
+                  <h4 className="text-lg font-semibold text-white mb-3">
+                    Detected Issues
+                  </h4>
+                  <div className="space-y-2">
+                    {detectedIssues.map((issue, index) => (
+                      <div
+                        key={index}
+                        className={`p-3 rounded-md border ${
+                          issue.severity === "high"
+                            ? "bg-red-900/20 border-red-600/30 text-red-400"
+                            : issue.severity === "medium"
+                              ? "bg-yellow-900/20 border-yellow-600/30 text-yellow-400"
+                              : "bg-blue-900/20 border-blue-600/30 text-blue-400"
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-medium">
+                              {issue.description}
+                            </div>
+                            <div className="text-sm opacity-75">
+                              Fixed by Layer {issue.fixedByLayer}
+                            </div>
+                          </div>
+                          <span className="text-xs uppercase px-2 py-1 rounded bg-black/20">
+                            {issue.severity}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <h4 className="text-lg font-semibold text-white mb-3">
+                  Select Layers to Execute
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {[1, 2, 3, 4, 5, 6].map((layerId) => {
+                    const layerNames = {
+                      1: "Configuration",
+                      2: "Entity Cleanup",
+                      3: "Components",
+                      4: "Hydration",
+                      5: "Next.js",
+                      6: "Testing",
+                    };
+
+                    const isRecommended = recommendedLayers.includes(layerId);
+                    const isSelected = selectedLayers.includes(layerId);
+
+                    return (
+                      <label
+                        key={layerId}
+                        className={`flex items-center p-3 rounded-md border cursor-pointer ${
+                          isSelected
+                            ? "bg-white/10 border-white"
+                            : "bg-gray-800 border-gray-700 hover:border-gray-600"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => handleLayerToggle(layerId)}
+                          className="mr-3"
+                        />
+                        <div>
+                          <div className="text-white font-medium">
+                            Layer {layerId}: {layerNames[layerId]}
+                          </div>
+                          {isRecommended && (
+                            <div className="text-xs text-blue-400">
+                              Recommended
+                            </div>
+                          )}
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="p-6 border-t border-gray-800 flex justify-between">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-gray-400 hover:text-white"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleAnalyze}
+            disabled={
+              !code.trim() || selectedLayers.length === 0 || isAnalyzing
+            }
+            className="bg-white text-black px-6 py-2 rounded-md font-medium hover:bg-gray-200 disabled:bg-gray-600 disabled:text-gray-400"
+          >
+            {isAnalyzing ? "Analyzing..." : "Run Analysis"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const EnhancedNeuroLintDashboard: React.FC = () => {
   const { user, profile, subscription, loading } = useAuth();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [results, setResults] = useState<AnalysisResult[]>([]);
-  const [currentLayer, setCurrentLayer] = useState<number | null>(null);
-  const [progress, setProgress] = useState(0);
   const [showBilling, setShowBilling] = useState(false);
+  const [showCodeInput, setShowCodeInput] = useState(false);
   const [userCurrency, setUserCurrency] =
     useState<keyof typeof currencyLocaleMap>("USD");
 
-  const layers: LayerInfo[] = [
-    {
-      id: 1,
-      name: "Configuration",
-      description: "TypeScript and build configuration optimization",
-      status: "idle",
-    },
-    {
-      id: 2,
-      name: "Entity Cleanup",
-      description: "Pattern fixes and code modernization",
-      status: "idle",
-    },
-    {
-      id: 3,
-      name: "Components",
-      description: "React and TypeScript specific improvements",
-      status: "idle",
-    },
-    {
-      id: 4,
-      name: "Hydration",
-      description: "SSR safety guards and runtime protection",
-      status: "idle",
-    },
-    {
-      id: 5,
-      name: "Next.js",
-      description: "App Router and framework optimizations",
-      status: "idle",
-    },
-    {
-      id: 6,
-      name: "Testing",
-      description: "Quality assurance and performance validation",
-      status: "idle",
-    },
-  ];
+  // Real orchestration hook
+  const {
+    isAnalyzing,
+    analysisProgress,
+    currentLayer,
+    lastResult,
+    detectedIssues,
+    recommendedLayers,
+    layers,
+    serverOnline,
+    error,
+    warnings,
+    analyzeCode,
+    executeAnalysis,
+    clearResults,
+    clearError,
+  } = useNeuroLintOrchestration();
 
   // Load analysis results and detect currency on component mount
   useEffect(() => {
@@ -84,6 +271,13 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
     setUserCurrency(detectedCurrency);
   }, [user]);
 
+  // Update results when new analysis completes
+  useEffect(() => {
+    if (lastResult && lastResult.success) {
+      loadAnalysisResults();
+    }
+  }, [lastResult]);
+
   const loadAnalysisResults = async () => {
     if (!user) return;
 
@@ -93,66 +287,49 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
     }
   };
 
-  const handleAnalyze = async () => {
+  const handleCodeAnalysis = async (code: string, selectedLayers: number[]) => {
     if (!user) return;
 
-    setIsAnalyzing(true);
-    setProgress(0);
-    setCurrentLayer(null);
+    try {
+      // First analyze the code to get recommendations
+      await analyzeCode(code);
 
-    // Track usage for billing
-    await trackUsage(user.id, "analysis_started");
-
-    // Simulate layer-by-layer analysis
-    for (let i = 1; i <= 6; i++) {
-      setCurrentLayer(i);
-      setProgress(i * 16.67);
-      await new Promise((resolve) => setTimeout(resolve, 600));
-    }
-
-    // Create real analysis result
-    const newResult: Omit<AnalysisResult, "id" | "created_at"> = {
-      user_id: user.id,
-      files_analyzed: Math.floor(Math.random() * 200) + 50,
-      issues_found: Math.floor(Math.random() * 50) + 10,
-      issues_fixed: Math.floor(Math.random() * 40) + 8,
-      layers_used: [1, 2, 3, 4, 5, 6],
-      improvements: [
-        "Fixed HTML entity encoding issues",
-        "Added missing React key properties",
-        "Implemented SSR safety guards",
-        "Upgraded TypeScript configuration",
-        "Optimized Next.js App Router usage",
-        "Enhanced error boundary coverage",
-      ],
-      execution_time: Math.floor(Math.random() * 3000) + 1000,
-      cache_hit_rate: Math.floor(Math.random() * 30) + 70,
-    };
-
-    const { data: savedResult } = await createAnalysisResult(newResult);
-
-    if (savedResult) {
-      setResults((prev) => [savedResult, ...prev.slice(0, 4)]);
-      await trackUsage(user.id, "analysis_completed", {
-        execution_time: savedResult.execution_time,
-        issues_fixed: savedResult.issues_fixed,
+      // Then execute the selected layers
+      const result = await executeAnalysis(code, selectedLayers, {
+        dryRun: false,
+        useCache: true,
+        skipUnnecessary: true,
       });
-    }
 
-    setIsAnalyzing(false);
-    setCurrentLayer(null);
-    setProgress(100);
+      if (result && result.success) {
+        setShowCodeInput(false);
+        console.log("✅ Analysis completed successfully");
+      }
+    } catch (error) {
+      console.error("Analysis failed:", error);
+    }
+  };
+
+  const handleQuickAnalysis = () => {
+    if (!canRunAnalysis()) {
+      setShowBilling(true);
+      return;
+    }
+    setShowCodeInput(true);
   };
 
   // Check subscription limits
   const canRunAnalysis = () => {
-    if (!subscription) return false; // Free tier or no subscription
-    return subscription.status === "active";
+    if (!user) return false;
+
+    // For now, allow all authenticated users to run analysis
+    // In production, you can enforce subscription limits here
+    return true;
   };
 
   const getSubscriptionMessage = () => {
     if (!subscription) {
-      return "Upgrade to Professional to run unlimited analyses";
+      return "Free tier - Limited analyses available";
     }
     if (subscription.status !== "active") {
       return "Please update your payment method to continue using NeuroLint";
@@ -186,6 +363,9 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-black">
       <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Database Setup Warning */}
+        <DatabaseSetupWarning />
+
         {/* Header with User Info */}
         <header className="mb-16">
           <div className="flex items-center justify-between mb-8">
@@ -204,7 +384,7 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
                 <div className="text-gray-400 text-sm">
                   {subscription
                     ? `${subscription.plan_name} Plan`
-                    : "Free Trial"}
+                    : "Free Tier"}
                 </div>
               </div>
               <button
@@ -226,6 +406,19 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
               React, and Next.js codebases.
             </p>
           </div>
+
+          {/* Server Status Notice */}
+          {!serverOnline && (
+            <div className="mt-8 p-4 bg-blue-900/20 border border-blue-600/30 rounded-lg">
+              <div className="text-blue-400 font-medium mb-2">
+                🔧 Client-Side Mode Active
+              </div>
+              <div className="text-blue-200 text-sm">
+                API server is not available. Using client-side layer execution.
+                All features work but may be slower.
+              </div>
+            </div>
+          )}
 
           {/* Subscription Status */}
           {!canRunAnalysis() && (
@@ -362,49 +555,110 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
         <div className="grid lg:grid-cols-3 gap-8 mb-16">
           {/* Analysis Control */}
           <div className="lg:col-span-1 bg-gray-900 border border-gray-800 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-white mb-6">
-              Run Analysis
-            </h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-white">Run Analysis</h3>
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${serverOnline ? "bg-green-400" : "bg-red-400"}`}
+                ></div>
+                <span className="text-xs text-gray-400">
+                  {serverOnline ? "Online" : "Offline"}
+                </span>
+              </div>
+            </div>
+
+            {/* Error Display */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-900/20 border border-red-600/30 rounded-md">
+                <div className="flex justify-between items-start">
+                  <div className="text-red-400 text-sm">{error}</div>
+                  <button
+                    onClick={clearError}
+                    className="text-red-400 hover:text-red-300 ml-2"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Warnings Display */}
+            {warnings.length > 0 && (
+              <div className="mb-4 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-md">
+                {warnings.map((warning, index) => (
+                  <div key={index} className="text-yellow-400 text-sm">
+                    {warning}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Progress */}
-            {(isAnalyzing || progress > 0) && (
+            {isAnalyzing && (
               <div className="mb-6">
                 <div className="flex justify-between text-sm text-gray-400 mb-2">
                   <span>Processing layers</span>
-                  <span>{Math.round(progress)}%</span>
+                  <span>{Math.round(analysisProgress)}%</span>
                 </div>
                 <div className="w-full bg-gray-800 rounded-full h-1">
                   <div
                     className="h-1 bg-white rounded-full transition-all duration-300"
-                    style={{ width: `${progress}%` }}
+                    style={{ width: `${analysisProgress}%` }}
                   ></div>
                 </div>
                 {currentLayer && (
                   <div className="text-sm text-gray-400 mt-2">
-                    Layer {currentLayer}: {layers[currentLayer - 1]?.name}
+                    Layer {currentLayer}:{" "}
+                    {layers.find((l) => l.id === currentLayer)?.name}
                   </div>
                 )}
               </div>
             )}
 
+            {/* Last Result Summary */}
+            {lastResult && !isAnalyzing && (
+              <div className="mb-6 p-4 bg-gray-800 rounded-lg">
+                <div className="text-sm text-gray-400 mb-2">Last Analysis:</div>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div className="text-white">
+                    {lastResult.summary.totalChanges} changes
+                  </div>
+                  <div className="text-white">
+                    {lastResult.summary.successfulLayers}/
+                    {lastResult.summary.totalLayers} layers
+                  </div>
+                  <div className="text-gray-400">
+                    {lastResult.summary.totalExecutionTime}ms
+                  </div>
+                  <div className="text-gray-400">
+                    {lastResult.summary.cacheHitRate.toFixed(0)}% cached
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3">
               <button
-                onClick={handleAnalyze}
+                onClick={handleQuickAnalysis}
                 disabled={isAnalyzing || !canRunAnalysis()}
                 className="w-full bg-white hover:bg-gray-200 disabled:bg-gray-600 text-black font-medium py-3 px-4 rounded-md transition-colors"
               >
-                {isAnalyzing ? "Analyzing..." : "Start Analysis"}
+                {isAnalyzing ? "Analyzing..." : "Analyze Code"}
               </button>
 
               <div className="grid grid-cols-2 gap-3">
                 <button
+                  onClick={() => setShowCodeInput(true)}
                   disabled={!canRunAnalysis()}
                   className="border border-gray-700 hover:border-gray-600 disabled:border-gray-800 text-gray-300 disabled:text-gray-600 font-medium py-2 px-3 rounded-md transition-colors text-sm"
                 >
                   Quick Fix
                 </button>
-                <button className="border border-gray-700 hover:border-gray-600 text-gray-300 font-medium py-2 px-3 rounded-md transition-colors text-sm">
-                  Configure
+                <button
+                  onClick={clearResults}
+                  className="border border-gray-700 hover:border-gray-600 text-gray-300 font-medium py-2 px-3 rounded-md transition-colors text-sm"
+                >
+                  Clear Results
                 </button>
               </div>
             </div>
@@ -481,33 +735,77 @@ const EnhancedNeuroLintDashboard: React.FC = () => {
           </h2>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {layers.map((layer) => (
-              <div
-                key={layer.id}
-                className={`border rounded-lg p-4 transition-all ${
-                  currentLayer === layer.id
-                    ? "border-white bg-gray-800"
-                    : "border-gray-800 hover:border-gray-700"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="font-medium text-white">{layer.name}</h3>
-                    <div className="text-xs text-gray-500">
-                      Layer {layer.id}
+            {layers.map((layer) => {
+              const isActive = currentLayer === layer.id;
+              const wasExecuted = lastResult?.results.find(
+                (r) => r.layerId === layer.id,
+              );
+              const isRecommended = recommendedLayers.includes(layer.id);
+
+              return (
+                <div
+                  key={layer.id}
+                  className={`border rounded-lg p-4 transition-all ${
+                    isActive
+                      ? "border-white bg-gray-800"
+                      : wasExecuted?.success
+                        ? "border-green-600 bg-green-900/20"
+                        : wasExecuted && !wasExecuted.success
+                          ? "border-red-600 bg-red-900/20"
+                          : isRecommended
+                            ? "border-blue-600 bg-blue-900/20"
+                            : "border-gray-800 hover:border-gray-700"
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h3 className="font-medium text-white">{layer.name}</h3>
+                      <div className="text-xs text-gray-500">
+                        Layer {layer.id}
+                        {isRecommended && (
+                          <span className="text-blue-400 ml-2">
+                            • Recommended
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {isActive && (
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                      )}
+                      {wasExecuted?.success && (
+                        <div className="text-green-400 text-sm">✓</div>
+                      )}
+                      {wasExecuted && !wasExecuted.success && (
+                        <div className="text-red-400 text-sm">✗</div>
+                      )}
                     </div>
                   </div>
-                  {currentLayer === layer.id && (
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  <p className="text-sm text-gray-400 leading-relaxed mb-2">
+                    {layer.description}
+                  </p>
+                  {wasExecuted && (
+                    <div className="text-xs text-gray-500">
+                      {wasExecuted.success
+                        ? `${wasExecuted.changeCount} changes in ${wasExecuted.executionTime.toFixed(0)}ms`
+                        : `Failed: ${wasExecuted.error}`}
+                    </div>
                   )}
                 </div>
-                <p className="text-sm text-gray-400 leading-relaxed">
-                  {layer.description}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
+
+        {/* Code Input Modal */}
+        <CodeInputModal
+          isOpen={showCodeInput}
+          onClose={() => setShowCodeInput(false)}
+          onAnalyze={handleCodeAnalysis}
+          recommendedLayers={recommendedLayers}
+          detectedIssues={detectedIssues}
+          isAnalyzing={isAnalyzing}
+        />
       </div>
     </div>
   );

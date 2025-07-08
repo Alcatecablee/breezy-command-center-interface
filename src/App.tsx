@@ -2,6 +2,7 @@ import React from "react";
 import { AuthProvider, useAuth } from "./lib/auth-context";
 import { LoginForm } from "./components/AuthComponents";
 import { ConfigurationNotice } from "./components/ConfigurationNotice";
+import { ConnectionStatus } from "./components/ConnectionStatus";
 import EnhancedNeuroLintDashboard from "./components/EnhancedNeuroLintDashboard";
 import { isSupabaseConfigured } from "./lib/supabase";
 
@@ -32,6 +33,7 @@ function App() {
   return (
     <AuthProvider>
       <AppContent />
+      <ConnectionStatus />
     </AuthProvider>
   );
 }

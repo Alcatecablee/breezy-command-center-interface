@@ -8,6 +8,10 @@ import {
   isSupabaseConfigured,
 } from "./supabase";
 import type { UserProfile, Subscription } from "./supabase";
+import {
+  checkDatabaseSetup,
+  initializeUserProfile,
+} from "../utils/initDatabase";
 
 interface AuthContextType {
   user: User | null;
@@ -40,13 +44,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const loadUserData = async (currentUser: User) => {
     try {
-      // Load user profile
-      const { data: profileData } = await getUserProfile(currentUser.id);
-      setProfile(profileData);
+      // Skip database checks for now to avoid hanging
+      console.log("User authenticated:", currentUser.email);
 
-      // Load subscription
-      const { data: subscriptionData } = await getSubscription(currentUser.id);
-      setSubscription(subscriptionData);
+      // Try to load user profile, but don't block if it fails
+      try {
+        const { data: profileData } = await getUserProfile(currentUser.id);
+        setProfile(profileData);
+      } catch (error) {
+        console.warn("Could not load user profile:", error);
+        // Create a minimal profile
+        setProfile({
+          id: currentUser.id,
+          user_id: currentUser.id,
+          company: "Your Company",
+          country: "United States",
+          timezone: "UTC",
+          preferences: {
+            default_layers: [1, 2, 3, 4],
+            email_notifications: true,
+            analysis_history_retention: 90,
+          },
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        });
+      }
+
+      // Try to load subscription, but don't block if it fails
+      try {
+        const { data: subscriptionData } = await getSubscription(
+          currentUser.id,
+        );
+        setSubscription(subscriptionData);
+      } catch (error) {
+        console.warn("Could not load subscription:", error);
+        setSubscription(null);
+      }
     } catch (error) {
       console.error("Error loading user data:", error);
     }
@@ -60,19 +93,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
     }
 
+    // Fallback timer to ensure loading doesn't hang forever
+    const fallbackTimer = setTimeout(() => {
+      console.warn("Auth loading taking too long, stopping loading state");
+      setLoading(false);
+      setUser(null);
+    }, 8000); // 8 second fallback
+
     // Check active sessions and sets the user
     const getSession = async () => {
       try {
+        // Simple session check without aggressive timeout
         const {
           data: { session },
+          error,
         } = await supabase.auth.getSession();
-        setUser(session?.user ?? null);
 
-        if (session?.user) {
-          await loadUserData(session.user);
+        clearTimeout(fallbackTimer); // Clear fallback since we got a response
+
+        if (error) {
+          console.error("Session check error:", error);
+          setUser(null);
+        } else {
+          setUser(session?.user ?? null);
+
+          if (session?.user) {
+            // Load user data in background, don't block UI
+            loadUserData(session.user).catch((error) => {
+              console.warn("Background user data loading failed:", error);
+            });
+          }
         }
       } catch (error) {
         console.error("Error getting session:", error);
+        clearTimeout(fallbackTimer);
+        // Don't block the app if session check fails
+        setUser(null);
       }
 
       setLoading(false);
@@ -107,6 +163,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     return () => {
+      clearTimeout(fallbackTimer);
       if (authSubscription) {
         authSubscription.unsubscribe();
       }
