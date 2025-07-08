@@ -254,7 +254,7 @@ export function useNeuroLintOrchestration(): UseNeuroLintOrchestrationState &
           warnings: result.recommendations || [],
         }));
 
-        // Save to database if successful
+        // Save to database if successful (skip in demo mode)
         if (result.success && user) {
           try {
             const analysisData = {
