@@ -248,4 +248,4 @@ class VSCodeBridge {
   }
 }
 
-module.exports = { VSCodeBridge };
+export { VSCodeBridge };
