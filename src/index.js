@@ -333,4 +333,4 @@ process.on("SIGTERM", () => {
   process.exit(0);
 });
 
-module.exports = { program, errorHandler, pluginManager };
+export { program, errorHandler, pluginManager };
