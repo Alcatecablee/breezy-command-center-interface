@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../lib/auth-context";
-import {
-  createAnalysisResult,
-  getAnalysisResults,
-  trackUsage,
-} from "../lib/supabase";
+import { getAnalysisResults } from "../lib/supabase";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import {
   getPayPalConfig,
@@ -16,12 +12,15 @@ import {
   currencyLocaleMap,
 } from "../lib/paypal";
 import type { AnalysisResult } from "../lib/supabase";
+import useNeuroLintOrchestration from "../hooks/useNeuroLintOrchestration";
 
-interface LayerInfo {
-  id: number;
-  name: string;
-  description: string;
-  status: "idle" | "running" | "complete" | "error";
+interface CodeInputModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAnalyze: (code: string, selectedLayers: number[]) => void;
+  recommendedLayers: number[];
+  detectedIssues: any[];
+  isAnalyzing: boolean;
 }
 
 const EnhancedNeuroLintDashboard: React.FC = () => {
