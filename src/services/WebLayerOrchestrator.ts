@@ -121,12 +121,14 @@ class WebLayerOrchestrator {
   ];
 
   constructor() {
+    // Use proxy path in development, full URL in production
     this.baseUrl =
-      import.meta.env.VITE_NEUROLINT_API_URL || "http://localhost:8001";
+      import.meta.env.VITE_NEUROLINT_API_URL ||
+      (import.meta.env.DEV ? "" : "http://localhost:8001");
 
     console.log(
       "🌐 WebLayerOrchestrator initialized with API URL:",
-      this.baseUrl,
+      this.baseUrl || "proxy",
     );
     console.log(
       "🔧 WebLayerOrchestrator initialized - will use client-side fallback if API unavailable",
